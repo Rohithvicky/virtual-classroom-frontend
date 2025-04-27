@@ -20,6 +20,7 @@ import Announcements from './pages/Announcements'; // Import the Announcements p
 import Layout from './components/Layout';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import CourseDetails from './pages/CourseDetails'; // Import the CourseDetails component
+import ContinueLearning from './pages/ContinueLearning'; // Import the ContinueLearning component
 
 function App() {
   const theme = createTheme({
@@ -173,6 +174,13 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <CourseDetails />
+                </Layout>
+              </ProtectedRoute>
+            } /> {/* Add this route */}
+            <Route path="/course/:id/continue" element={
+              <ProtectedRoute>
+                <Layout>
+                  <ContinueLearning />
                 </Layout>
               </ProtectedRoute>
             } /> {/* Add this route */}

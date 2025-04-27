@@ -1,46 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   Box,
   Typography,
   CircularProgress,
   Paper,
-  Divider,
   Button,
 } from '@mui/material';
 
-const CourseDetails = () => {
+const ContinueLearning = () => {
   const { id } = useParams(); // Get the course ID from the URL
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Simulate fetching course details
+    // Simulate fetching course details for "Continue Learning"
     setTimeout(() => {
       const mockCourses = [
         {
           id: '1',
           title: 'Java Programming',
-          description: 'Learn the basics of Java programming, including syntax, OOP, and more.',
-          instructor: 'Prof. Johnson',
-          progress: 95,
           lessons: [
-            { id: 1, title: 'Introduction to Java', completed: true },
-            { id: 2, title: 'Object-Oriented Programming', completed: false },
-            { id: 3, title: 'Data Structures in Java', completed: false },
+            { id: 1, title: 'Introduction to Java', content: 'Lesson content for Introduction to Java.' },
+            { id: 2, title: 'Object-Oriented Programming', content: 'Lesson content for Object-Oriented Programming.' },
+            { id: 3, title: 'Data Structures in Java', content: 'Lesson content for Data Structures in Java.' },
           ],
         },
         {
           id: '5',
           title: 'Foundations of Data Science',
-          description: 'Explore the fundamentals of data science, including statistics and machine learning.',
-          instructor: 'Dr. Patel',
-          progress: 80,
           lessons: [
-            { id: 1, title: 'Introduction to Data Science', completed: true },
-            { id: 2, title: 'Data Visualization', completed: true },
-            { id: 3, title: 'Machine Learning Basics', completed: false },
+            { id: 1, title: 'Introduction to Data Science', content: 'Lesson content for Introduction to Data Science.' },
+            { id: 2, title: 'Data Visualization', content: 'Lesson content for Data Visualization.' },
+            { id: 3, title: 'Machine Learning Basics', content: 'Lesson content for Machine Learning Basics.' },
           ],
         },
       ];
@@ -88,37 +80,17 @@ const CourseDetails = () => {
     <Box sx={{ p: 3 }}>
       <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
         <Typography variant="h4" fontWeight="bold" gutterBottom>
-          {course.title}
+          Continue Learning: {course.title}
         </Typography>
         <Typography variant="body1" color="text.secondary" gutterBottom>
-          Instructor: {course.instructor}
+          Select a lesson to continue your learning journey.
         </Typography>
-        <Typography variant="body2" sx={{ mb: 2 }}>
-          {course.description}
-        </Typography>
-        <Divider sx={{ my: 2 }} />
-        <Typography variant="h6" gutterBottom>
-          Progress: {course.progress}%
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate(`/course/${id}/continue`)} // Navigate to the "Continue Learning" page
-          >
-            Continue Learning
-          </Button>
-          <Button variant="outlined" color="secondary">
-            View Lessons
-          </Button>
-        </Box>
       </Paper>
 
       <Paper elevation={3} sx={{ p: 3 }}>
         <Typography variant="h5" gutterBottom>
           Lessons
         </Typography>
-        <Divider sx={{ mb: 2 }} />
         {course.lessons.map((lesson) => (
           <Box
             key={lesson.id}
@@ -130,12 +102,12 @@ const CourseDetails = () => {
             }}
           >
             <Typography variant="body1">{lesson.title}</Typography>
-            <Typography
-              variant="body2"
-              color={lesson.completed ? 'success.main' : 'text.secondary'}
+            <Button
+              variant="outlined"
+              onClick={() => alert(`Opening lesson: ${lesson.title}`)}
             >
-              {lesson.completed ? 'Completed' : 'Pending'}
-            </Typography>
+              Open Lesson
+            </Button>
           </Box>
         ))}
       </Paper>
@@ -143,4 +115,4 @@ const CourseDetails = () => {
   );
 };
 
-export default CourseDetails;
+export default ContinueLearning;
