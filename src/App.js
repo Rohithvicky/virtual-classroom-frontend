@@ -16,8 +16,10 @@ import Settings from './pages/Settings';
 import Discussion from './pages/Discussion'; // Import the Discussion page
 import LiveQuizzes from './pages/LiveQuizzes'; // Import the LiveQuizzes page
 import Profile from './pages/Profile'; // Import the Profile page
+import Announcements from './pages/Announcements'; // Import the Announcements page
 import Layout from './components/Layout';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import CourseDetails from './pages/CourseDetails'; // Import the CourseDetails component
 
 function App() {
   const theme = createTheme({
@@ -153,6 +155,27 @@ function App() {
                 </Layout>
               </ProtectedRoute>
             } /> {/* Add the Profile route */}
+            <Route path="/announcements" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Announcements />
+                </Layout>
+              </ProtectedRoute>
+            } /> {/* Add the Announcements route */}
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/course/:id" element={
+              <ProtectedRoute>
+                <Layout>
+                  <CourseDetails />
+                </Layout>
+              </ProtectedRoute>
+            } /> {/* Add this route */}
           </Routes>
         </Router>
       </AuthProvider>

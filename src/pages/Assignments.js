@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Box, 
   Typography, 
@@ -20,8 +20,6 @@ import {
   LinearProgress,
   TextField,
   InputAdornment,
-  Menu,
-  MenuItem,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -32,8 +30,6 @@ import {
 import { 
   Assignment, 
   Search, 
-  FilterList, 
-  Sort, 
   Add, 
   CheckCircle, 
   Schedule, 
@@ -43,7 +39,7 @@ import {
   Attachment
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { courses } from './CourseList'; // Import the courses array
+import { courses } from './CourseList';
 
 // Mock data for assignments
 const mockAssignments = [
@@ -116,7 +112,6 @@ const mockAssignments = [
   }
 ];
 
-{/* Assignment Details Component */}
 const AssignmentDetails = ({ assignment }) => {
   return (
     <Box sx={{ p: 2 }}>
@@ -219,19 +214,53 @@ const AssignmentDetails = ({ assignment }) => {
 const Assignments = () => {
   const { user } = useAuth();
   const [tabValue, setTabValue] = useState(0);
-  const [filterAnchorEl, setFilterAnchorEl] = useState(null);
-  const [sortAnchorEl, setSortAnchorEl] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  // Filter enrolled courses
+  // Get enrolled courses from the dashboard data
   const enrolledCourses = courses.filter(course => course.enrolled);
 
   // Filter assignments based on enrolled courses
   const enrolledAssignments = mockAssignments.filter(assignment =>
     enrolledCourses.some(course => course.title === assignment.course)
   );
+
+  // Calculate assignment statistics based on enrolled courses
+  const assignmentStats = useMemo(() => {
+    const totalAssignments = enrolledAssignments.length;
+    const completedAssignments = enrolledAssignments.filter(
+      (a) => a.status === 'graded' || a.status === 'late'
+    ).length;
+    const upcomingAssignments = enrolledAssignments.filter(
+      (a) => a.status === 'upcoming'
+    ).length;
+
+    // Calculate average score for graded assignments
+    const gradedAssignments = enrolledAssignments.filter(
+      (a) => a.status === 'graded' || a.status === 'late'
+    );
+    const averageScore =
+      gradedAssignments.length > 0
+        ? Math.round(
+            gradedAssignments.reduce(
+              (sum, a) => sum + (a.scored / a.points) * 100,
+              0
+            ) / gradedAssignments.length
+          )
+        : 0;
+
+    return {
+      totalAssignments,
+      completedAssignments,
+      upcomingAssignments,
+      completionPercentage:
+        totalAssignments > 0
+          ? Math.round((completedAssignments / totalAssignments) * 100)
+          : 0,
+      averageScore,
+    };
+  }, [enrolledAssignments]);
 
   // Filter assignments based on tab and search
   const filteredAssignments = enrolledAssignments.filter(assignment => {
@@ -284,8 +313,6 @@ const Assignments = () => {
     return date.toLocaleDateString();
   };
 
-  const upcomingCount = enrolledAssignments.filter(a => a.status === 'upcoming').length;
-
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -312,7 +339,7 @@ const Assignments = () => {
               <Tab label="All" />
               <Tab 
                 label={
-                  <Badge badgeContent={upcomingCount} color="error">
+                  <Badge badgeContent={assignmentStats.upcomingAssignments} color="error">
                     Upcoming
                   </Badge>
                 } 
@@ -441,16 +468,18 @@ const Assignments = () => {
                 <Box sx={{ width: '100%', mr: 1 }}>
                   <LinearProgress 
                     variant="determinate" 
-                    value={60} 
+                    value={assignmentStats.completionPercentage} 
                     sx={{ height: 10, borderRadius: 5 }}
                   />
                 </Box>
                 <Box sx={{ minWidth: 35 }}>
-                  <Typography variant="body2" color="text.secondary">60%</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {assignmentStats.completionPercentage}%
+                  </Typography>
                 </Box>
               </Box>
               <Typography variant="body2" sx={{ mt: 1 }}>
-                3 of 5 assignments completed
+                {assignmentStats.completedAssignments} of {assignmentStats.totalAssignments} assignments completed
               </Typography>
             </Grid>
             {/* Average Score Section */}
@@ -462,17 +491,19 @@ const Assignments = () => {
                 <Box sx={{ width: '100%', mr: 1 }}>
                   <LinearProgress 
                     variant="determinate" 
-                    value={82} 
+                    value={assignmentStats.averageScore} 
                     sx={{ height: 10, borderRadius: 5 }}
                     color="success"
                   />
                 </Box>
                 <Box sx={{ minWidth: 35 }}>
-                  <Typography variant="body2" color="text.secondary">82%</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {assignmentStats.averageScore}%
+                  </Typography>
                 </Box>
               </Box>
               <Typography variant="body2" sx={{ mt: 1 }}>
-                Average score: 82 / 100 points
+                Average score across all graded assignments
               </Typography>
             </Grid>
           </Grid>
