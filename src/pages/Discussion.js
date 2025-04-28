@@ -42,7 +42,7 @@ import {
   MoreVert,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { courses } from './CourseList'; // Import the courses array
+import { courses } from './CourseList'; // Import the named export 'courses'
 
 // Mock data for discussion threads
 const mockDiscussions = [

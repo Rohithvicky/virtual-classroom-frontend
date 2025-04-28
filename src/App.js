@@ -10,7 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CourseList from './pages/CourseList';
-import CourseDetail from './pages/CourseDetail';
+import CourseDetail from './pages/CourseDetails'; // Correct file name
 import Assignments from './pages/Assignments';
 import Settings from './pages/Settings';
 import Discussion from './pages/Discussion'; // Import the Discussion page
