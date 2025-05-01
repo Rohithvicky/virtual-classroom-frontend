@@ -1,4 +1,3 @@
-// src/pages/Login.js
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -33,9 +32,15 @@ const Login = () => {
       setLoading(true);
       
       // Simulate a successful login
-      await login({ name: 'Demo User', email, role: email.includes('teacher') ? 'Teacher' : 'Student' }, 'mock-token');
+      const role = email.includes('teacher') ? 'Teacher' : 'Student';
+      await login({ name: 'Demo User', email, role }, 'mock-token');
       
-      navigate('/');
+      // Navigate to the respective dashboard
+      if (role === 'Teacher') {
+        navigate('/teacher-dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       setError('Failed to sign in. Please check your credentials.');
       console.error(err);

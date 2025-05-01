@@ -23,6 +23,7 @@ import CourseDetails from './pages/CourseDetails'; // Import the CourseDetails c
 import ContinueLearning from './pages/ContinueLearning'; // Import the ContinueLearning component
 import { CoursesProvider } from './contexts/CoursesContext';
 import LiveClasses from './pages/LiveClasses'; // Import the LiveClasses page
+import TeacherDashboard from './pages/TeacherDashboard'; // Import the TeacherDashboard page
 
 function App() {
   const theme = createTheme({
@@ -194,6 +195,13 @@ function App() {
                   </Layout>
                 </ProtectedRoute>
               } />
+              <Route path="/teacher-dashboard" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <TeacherDashboard />
+                  </Layout>
+                </ProtectedRoute>
+              } /> {/* Add the Teacher Dashboard route */}
             </Routes>
           </Router>
         </CoursesProvider>
