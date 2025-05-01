@@ -32,9 +32,8 @@ const Login = () => {
       setError('');
       setLoading(true);
       
-      // In a real app, you would make an API call here
-      // For demo purposes, we'll simulate a successful login
-      await login({ name: 'Demo User', email, role: 'Student' }, 'mock-token');
+      // Simulate a successful login
+      await login({ name: 'Demo User', email, role: email.includes('teacher') ? 'Teacher' : 'Student' }, 'mock-token');
       
       navigate('/');
     } catch (err) {
@@ -42,6 +41,16 @@ const Login = () => {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDummyLogin = (role) => {
+    if (role === 'Student') {
+      setEmail('student@example.com');
+      setPassword('student123');
+    } else if (role === 'Teacher') {
+      setEmail('teacher@example.com');
+      setPassword('teacher123');
     }
   };
 
@@ -118,6 +127,33 @@ const Login = () => {
                     {"Don't have an account? Sign Up"}
                   </Typography>
                 </Link>
+              </Grid>
+            </Grid>
+          </Box>
+          <Box sx={{ mt: 3, width: '100%' }}>
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
+              Or use dummy credentials for testing:
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => handleDummyLogin('Student')}
+                >
+                  Login as Student
+                </Button>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="secondary"
+                  onClick={() => handleDummyLogin('Teacher')}
+                >
+                  Login as Teacher
+                </Button>
               </Grid>
             </Grid>
           </Box>

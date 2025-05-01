@@ -114,13 +114,13 @@ const Dashboard = () => {
         // Simulate API calls in parallel
         const [userEnrolledCourses, mockAssignments, mockAnnouncements] = await Promise.all([
           new Promise(resolve => setTimeout(() => {
+            // Filter to only get enrolled courses
             resolve(
               courses
-                .filter(course => course.title === 'Java Programming' || course.title === 'Foundations of Data Science')
+                .filter(course => course.enrolled === true)
                 .map(course => ({
                   ...course,
                   progress: Math.floor(Math.random() * 100), // Add random progress for demo
-                  enrolled: true, // Mark as enrolled
                 }))
             );
           }, 200)), // Reduced delay to 200ms
@@ -417,13 +417,13 @@ const Dashboard = () => {
       <Box sx={{ mb: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center' }}>
-            <SchoolIcon sx={{ mr: 1, color: colors.primary }} /> My Courses
+            <SchoolIcon sx={{ mr: 1, color: colors.primary }} /> My Enrolled Courses
           </Typography>
         </Box>
         
         {loading.courses ? (
           <Grid container spacing={3}>
-            {[1, 2, 3].map((item) => (
+            {[1, 2].map((item) => (
               <Grid item xs={12} sm={6} md={4} key={item}>
                 <Skeleton variant="rectangular" height={220} sx={{ borderRadius: 3 }} />
               </Grid>
