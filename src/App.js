@@ -21,6 +21,8 @@ import Layout from './components/Layout';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import CourseDetails from './pages/CourseDetails'; // Import the CourseDetails component
 import ContinueLearning from './pages/ContinueLearning'; // Import the ContinueLearning component
+import { CoursesProvider } from './contexts/CoursesContext';
+import LiveClasses from './pages/LiveClasses'; // Import the LiveClasses page
 
 function App() {
   const theme = createTheme({
@@ -96,96 +98,105 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
-        <Router>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Dashboard />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/courses" element={
-              <ProtectedRoute>
-                <Layout>
-                  <CourseList />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/courses/:id" element={
-              <ProtectedRoute>
-                <Layout>
-                  <CourseDetail />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/assignments" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Assignments />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Settings />
-                </Layout>
-              </ProtectedRoute>
-            } /> {/* Add the Settings route */}
-            <Route path="/discussion" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Discussion />
-                </Layout>
-              </ProtectedRoute>
-            } /> {/* Add the Discussion route */}
-            <Route path="/live-quizzes" element={
-              <ProtectedRoute>
-                <Layout>
-                  <LiveQuizzes />
-                </Layout>
-              </ProtectedRoute>
-            } /> {/* Add the Live Quizzes route */}
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Profile />
-                </Layout>
-              </ProtectedRoute>
-            } /> {/* Add the Profile route */}
-            <Route path="/announcements" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Announcements />
-                </Layout>
-              </ProtectedRoute>
-            } /> {/* Add the Announcements route */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Layout>
-                  <Dashboard />
-                </Layout>
-              </ProtectedRoute>
-            } />
-            <Route path="/course/:id" element={
-              <ProtectedRoute>
-                <Layout>
-                  <CourseDetails />
-                </Layout>
-              </ProtectedRoute>
-            } /> {/* Add this route */}
-            <Route path="/course/:id/continue" element={
-              <ProtectedRoute>
-                <Layout>
-                  <ContinueLearning />
-                </Layout>
-              </ProtectedRoute>
-            } /> {/* Add this route */}
-          </Routes>
-        </Router>
+        <CoursesProvider>
+          <Router>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/courses" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CourseList />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/courses/:id" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CourseDetail />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/assignments" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Assignments />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Settings />
+                  </Layout>
+                </ProtectedRoute>
+              } /> {/* Add the Settings route */}
+              <Route path="/discussion" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Discussion />
+                  </Layout>
+                </ProtectedRoute>
+              } /> {/* Add the Discussion route */}
+              <Route path="/live-quizzes" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <LiveQuizzes />
+                  </Layout>
+                </ProtectedRoute>
+              } /> {/* Add the Live Quizzes route */}
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Profile />
+                  </Layout>
+                </ProtectedRoute>
+              } /> {/* Add the Profile route */}
+              <Route path="/announcements" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Announcements />
+                  </Layout>
+                </ProtectedRoute>
+              } /> {/* Add the Announcements route */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/course/:id" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CourseDetails />
+                  </Layout>
+                </ProtectedRoute>
+              } /> {/* Add this route */}
+              <Route path="/course/:id/continue" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ContinueLearning />
+                  </Layout>
+                </ProtectedRoute>
+              } /> {/* Add this route */}
+              <Route path="/live-classes" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <LiveClasses />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+            </Routes>
+          </Router>
+        </CoursesProvider>
       </AuthProvider>
     </ThemeProvider>
   );

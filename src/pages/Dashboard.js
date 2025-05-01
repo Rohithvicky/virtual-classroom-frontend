@@ -413,7 +413,7 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Recent Courses */}
+      {/* My Courses Section */}
       <Box sx={{ mb: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center' }}>

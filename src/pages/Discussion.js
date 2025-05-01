@@ -1,59 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   Box,
   Typography,
   Card,
   CardContent,
   Grid,
-  Avatar,
   TextField,
   Button,
-  IconButton,
-  List,
-  ListItem,
-  Divider,
-  Paper,
   Tabs,
   Tab,
   InputAdornment,
-  Menu,
-  MenuItem,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  Tooltip,
+  List,
+  ListItem,
+  Divider,
 } from '@mui/material';
-import {
-  ChatBubbleOutline,
-  Search,
-  FilterList,
-  Sort,
-  Add,
-  ThumbUp,
-  Reply,
-  Bookmark,
-  BookmarkBorder,
-  MoreVert,
-} from '@mui/icons-material';
+import { Search, Add } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { courses } from './CourseList'; // Import the named export 'courses'
+import { CoursesContext } from '../contexts/CoursesContext'; // Import the shared context
 
 // Mock data for discussion threads
 const mockDiscussions = [
   {
     id: 1,
     title: 'How to implement React hooks efficiently?',
-    course: 'Modern Web Development',
+    course: 'Java Programming',
     author: {
       id: 101,
       name: 'Alex Johnson',
-      avatar: '/api/placeholder/40/40',
     },
     date: '2025-04-24T14:30:00',
     content: "I've been learning about React hooks and I'm trying to understand the best practices for useEffect. Can someone explain when to use what approach?",
@@ -67,11 +40,10 @@ const mockDiscussions = [
   {
     id: 2,
     title: 'Database indexing strategies for large datasets',
-    course: 'Database Management',
+    course: 'Foundations of Data Science',
     author: {
       id: 102,
       name: 'Maria Garcia',
-      avatar: '/api/placeholder/40/40',
     },
     date: '2025-04-23T09:15:00',
     content: "I'm working with a database that has grown to over 10 million records. The queries are starting to slow down. What indexing strategies would you recommend for optimizing performance?",
@@ -82,28 +54,11 @@ const mockDiscussions = [
     pinned: false,
     bookmarked: false,
   },
-  {
-    id: 3,
-    title: 'CSS Grid vs Flexbox - when to use each?',
-    course: 'Advanced CSS Techniques',
-    author: {
-      id: 103,
-      name: 'Jamal Wilson',
-      avatar: '/api/placeholder/40/40',
-    },
-    date: '2025-04-22T16:45:00',
-    content: "I'm still confused about when to use CSS Grid versus Flexbox. Are there specific scenarios where one is clearly better than the other?",
-    tags: ['css', 'grid', 'flexbox'],
-    replies: 15,
-    views: 201,
-    likes: 27,
-    pinned: false,
-    bookmarked: true,
-  },
 ];
 
 const Discussion = () => {
   const { user } = useAuth();
+  const { courses } = useContext(CoursesContext); // Access courses from the shared context
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedThread, setSelectedThread] = useState(null);

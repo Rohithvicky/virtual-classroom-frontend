@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Box, Typography, Card, CardContent, Button, Grid } from '@mui/material';
+import { CoursesContext } from '../contexts/CoursesContext';
 
 const LiveQuizzes = () => {
+  const { courses } = useContext(CoursesContext);
+
   const quizzes = [
     {
       id: 1,
@@ -31,25 +34,17 @@ const LiveQuizzes = () => {
     return date.toLocaleString();
   };
 
+  // Filter quizzes based on enrolled courses
+  const enrolledCourses = courses.filter((course) => course.enrolled);
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>
         Live Quizzes
       </Typography>
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={6} md={4}>
-          <Card>Content 1</Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <Card>Content 2</Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
-          <Card>Content 3</Card>
-        </Grid>
-      </Grid>
-      <Grid container spacing={3}>
-        {quizzes.map((quiz) => (
-          <Grid item xs={12} sm={6} md={4} key={quiz.id}>
+        {enrolledCourses.map((course) => (
+          <Grid item xs={12} sm={6} md={4} key={course.id}>
             <Card
               sx={{
                 borderRadius: '12px',
@@ -62,25 +57,34 @@ const LiveQuizzes = () => {
             >
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  {quiz.title}
+                  {course.title}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Course: {quiz.course}
+                  Quizzes for this course will be displayed here.
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Start Time: {formatDateTime(quiz.startTime)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Duration: {quiz.duration}
-                </Typography>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  sx={{ mt: 2 }}
-                  fullWidth
-                >
-                  Join Quiz
-                </Button>
+                {quizzes
+                  .filter((quiz) => quiz.course === course.title)
+                  .map((quiz) => (
+                    <div key={quiz.id}>
+                      <Typography variant="body2" color="text.secondary">
+                        {quiz.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Start Time: {formatDateTime(quiz.startTime)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Duration: {quiz.duration}
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{ mt: 2 }}
+                        fullWidth
+                      >
+                        Join Quiz
+                      </Button>
+                    </div>
+                  ))}
               </CardContent>
             </Card>
           </Grid>

@@ -133,6 +133,7 @@ const Layout = ({ children }) => {
     { text: 'Assignments', path: '/assignments', icon: <Assignment /> },
     { text: 'Discussion', path: '/discussion', icon: <Forum /> },
     { text: 'Live Quizzes', path: '/live-quizzes', icon: <Quiz /> },
+    { text: 'Live Classes', path: '/live-classes', icon: <School /> }, // Added Live Classes
   ];
 
   const isActive = (path) => {

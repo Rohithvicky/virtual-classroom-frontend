@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { CoursesContext } from '../contexts/CoursesContext';
 import {
   Box,
   Typography,
@@ -24,6 +25,10 @@ const Announcements = () => {
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
   const navigate = useNavigate();
+  const { courses } = useContext(CoursesContext);
+
+  // Filter announcements based on enrolled courses
+  const enrolledCourses = courses.filter((course) => course.enrolled);
 
   useEffect(() => {
     // Simulate fetching announcements

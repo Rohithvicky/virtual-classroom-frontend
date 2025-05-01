@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useContext } from 'react';
 import { 
   Box, 
   Typography, 
@@ -39,7 +39,7 @@ import {
   Attachment
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { courses } from './CourseList';
+import { CoursesContext } from '../contexts/CoursesContext';
 
 // Mock data for assignments
 const mockAssignments = [
@@ -213,6 +213,7 @@ const AssignmentDetails = ({ assignment }) => {
 
 const Assignments = () => {
   const { user } = useAuth();
+  const { courses } = useContext(CoursesContext);
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAssignment, setSelectedAssignment] = useState(null);
