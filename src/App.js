@@ -17,15 +17,14 @@ import LiveQuizzes from './pages/LiveQuizzes';
 import LiveClasses from './pages/LiveClasses';
 
 const RoleBasedRedirect = () => {
-  const { role } = useAuth();
-  
-  // Redirect based on role
-  if (role === 'teacher') {
-    return <Navigate to="/teacher-dashboard" replace />;
-  } else if (role === 'student') {
-    return <Navigate to="/dashboard" replace />;
+  const { user } = useAuth();
+
+  if (user.role === 'student') {
+    return <Navigate to="/student/dashboard" />;
+  } else if (user.role === 'teacher') {
+    return <Navigate to="/teacher/dashboard" />;
   } else {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" />;
   }
 };
 
