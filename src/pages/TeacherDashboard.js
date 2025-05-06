@@ -11,6 +11,7 @@ import {
   Paper,
   Divider,
   Avatar,
+  Container,
 } from '@mui/material';
 import {
   VideoCall as VideoCallIcon,
@@ -25,59 +26,47 @@ import {
 import { CoursesContext } from '../contexts/CoursesContext';
 
 const TeacherDashboard = () => {
-  const { courses } = useContext(CoursesContext); // Example context for courses
+  const { courses } = useContext(CoursesContext);
   const [currentTab, setCurrentTab] = useState(0);
 
-  const handleTabChange = (event, newValue) => {
-    setCurrentTab(newValue);
+  const handleTabChange = (event, newValue) => setCurrentTab(newValue);
+
+  const teacherStats = {
+    totalCourses: courses.length,
+    enrolledStudents: 120,
+    upcomingClasses: 5,
+    upcomingQuizzes: 3,
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* Overview Panel */}
+    <Container maxWidth="xl" sx={{ py: 3 }}>
       <Typography variant="h4" fontWeight="bold" gutterBottom>
         Teacher Dashboard
       </Typography>
+
+      {/* Stats Overview */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ p: 2, textAlign: 'center' }}>
-            <Avatar sx={{ bgcolor: 'primary.main', mx: 'auto', mb: 1 }}>
-              <BookIcon />
-            </Avatar>
-            <Typography variant="h6">Total Courses</Typography>
-            <Typography variant="h4">{courses.length}</Typography>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ p: 2, textAlign: 'center' }}>
-            <Avatar sx={{ bgcolor: 'secondary.main', mx: 'auto', mb: 1 }}>
-              <PeopleIcon />
-            </Avatar>
-            <Typography variant="h6">Enrolled Students</Typography>
-            <Typography variant="h4">120</Typography> {/* Example data */}
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ p: 2, textAlign: 'center' }}>
-            <Avatar sx={{ bgcolor: 'success.main', mx: 'auto', mb: 1 }}>
-              <VideoCallIcon />
-            </Avatar>
-            <Typography variant="h6">Upcoming Classes</Typography>
-            <Typography variant="h4">5</Typography> {/* Example data */}
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card sx={{ p: 2, textAlign: 'center' }}>
-            <Avatar sx={{ bgcolor: 'error.main', mx: 'auto', mb: 1 }}>
-              <QuizIcon />
-            </Avatar>
-            <Typography variant="h6">Upcoming Quizzes</Typography>
-            <Typography variant="h4">3</Typography> {/* Example data */}
-          </Card>
-        </Grid>
+        {[
+          { title: 'Total Courses', value: teacherStats.totalCourses, icon: <BookIcon />, color: 'primary.main' },
+          { title: 'Enrolled Students', value: teacherStats.enrolledStudents, icon: <PeopleIcon />, color: 'secondary.main' },
+          { title: 'Upcoming Classes', value: teacherStats.upcomingClasses, icon: <VideoCallIcon />, color: 'success.main' },
+          { title: 'Upcoming Quizzes', value: teacherStats.upcomingQuizzes, icon: <QuizIcon />, color: 'error.main' },
+        ].map((stat, index) => (
+          <Grid item xs={12} sm={6} md={3} key={index}>
+            <Card sx={{ p: 2, textAlign: 'center', borderRadius: '12px', height: '100%' }}>
+              <Avatar sx={{ bgcolor: stat.color, mx: 'auto', mb: 1 }}>
+                {stat.icon}
+              </Avatar>
+              <Typography variant="h6">{stat.title}</Typography>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: '#4361ee' }}>
+                {stat.value}
+              </Typography>
+            </Card>
+          </Grid>
+        ))}
       </Grid>
 
-      {/* Tabs for Different Sections */}
+      {/* Tabs */}
       <Paper sx={{ mb: 3 }}>
         <Tabs
           value={currentTab}
@@ -94,98 +83,81 @@ const TeacherDashboard = () => {
           <Tab label="Discussions" icon={<CheckCircleIcon />} iconPosition="start" />
           <Tab label="Quizzes" icon={<QuizIcon />} iconPosition="start" />
           <Tab label="Live Classes" icon={<VideoCallIcon />} iconPosition="start" />
-          <Tab label="Profile & Settings" icon={<SettingsIcon />} iconPosition="start" />
+          <Tab label="Settings" icon={<SettingsIcon />} iconPosition="start" />
         </Tabs>
       </Paper>
 
       {/* Tab Content */}
-      {currentTab === 0 && (
-        <Box>
-          <Typography variant="h5" gutterBottom>
-            Manage Courses
-          </Typography>
-          <Grid container spacing={3}>
-            {courses.map((course) => (
-              <Grid item xs={12} sm={6} md={4} key={course.id}>
-                <Card sx={{ p: 2 }}>
-                  <Typography variant="h6">{course.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {course.description}
-                  </Typography>
-                  <Divider sx={{ my: 2 }} />
-                  <Button variant="contained" color="primary" fullWidth>
-                    Edit Course
-                  </Button>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
-      )}
+      <Box>
+        {currentTab === 0 && (
+          <>
+            <Typography variant="h5" gutterBottom>
+              Manage Courses
+            </Typography>
+            <Grid container spacing={3}>
+              {courses.map((course) => (
+                <Grid item xs={12} sm={6} md={4} key={course.id}>
+                  <Card sx={{ p: 2, height: '100%' }}>
+                    <CardContent>
+                      <Typography variant="h6">{course.title}</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        {course.description}
+                      </Typography>
+                    </CardContent>
+                    <Divider sx={{ my: 1 }} />
+                    <Button variant="contained" color="primary" fullWidth>
+                      Edit Course
+                    </Button>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </>
+        )}
 
-      {currentTab === 1 && (
-        <Box>
+        {currentTab === 1 && (
           <Typography variant="h5" gutterBottom>
             Manage Students
           </Typography>
-          <Typography variant="body2">View and manage enrolled students.</Typography>
-        </Box>
-      )}
+        )}
 
-      {currentTab === 2 && (
-        <Box>
+        {currentTab === 2 && (
           <Typography variant="h5" gutterBottom>
             Manage Assignments
           </Typography>
-          <Typography variant="body2">Create and grade assignments.</Typography>
-        </Box>
-      )}
+        )}
 
-      {currentTab === 3 && (
-        <Box>
+        {currentTab === 3 && (
           <Typography variant="h5" gutterBottom>
             Announcements
           </Typography>
-          <Typography variant="body2">Post and manage announcements.</Typography>
-        </Box>
-      )}
+        )}
 
-      {currentTab === 4 && (
-        <Box>
+        {currentTab === 4 && (
           <Typography variant="h5" gutterBottom>
             Discussions
           </Typography>
-          <Typography variant="body2">Monitor and reply to discussions.</Typography>
-        </Box>
-      )}
+        )}
 
-      {currentTab === 5 && (
-        <Box>
+        {currentTab === 5 && (
           <Typography variant="h5" gutterBottom>
             Manage Quizzes
           </Typography>
-          <Typography variant="body2">Create and manage quizzes.</Typography>
-        </Box>
-      )}
+        )}
 
-      {currentTab === 6 && (
-        <Box>
+        {currentTab === 6 && (
           <Typography variant="h5" gutterBottom>
             Live Classes
           </Typography>
-          <Typography variant="body2">Schedule and manage live classes.</Typography>
-        </Box>
-      )}
+        )}
 
-      {currentTab === 7 && (
-        <Box>
+        {currentTab === 7 && (
           <Typography variant="h5" gutterBottom>
-            Profile & Settings
+            Settings
           </Typography>
-          <Typography variant="body2">Update your profile and preferences.</Typography>
-        </Box>
-      )}
-    </Box>
+        )}
+      </Box>
+    </Container>
   );
 };
 
