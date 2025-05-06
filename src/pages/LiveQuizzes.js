@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
-import { Box, Typography, Grid, Card, CardContent } from '@mui/material';
 import { CoursesContext } from '../contexts/CoursesContext';
+import { Box, Typography, Grid, Card, CardContent } from '@mui/material';
 
 const LiveQuizzes = () => {
-  const { filteredLiveQuizzes } = useContext(CoursesContext); // Get filtered quizzes from context
+  const { filteredLiveQuizzes } = useContext(CoursesContext); // Get filtered live quizzes for enrolled courses
 
   return (
     <Box sx={{ p: 3 }}>
