@@ -26,43 +26,9 @@ import {
 import { CoursesContext } from '../contexts/CoursesContext';
 
 const LiveClasses = () => {
-  const { courses } = useContext(CoursesContext);
+  const { filteredLiveClasses } = useContext(CoursesContext); // Get filtered classes from context
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
-
-  // Sample live classes data - would come from API
-  const liveClasses = [
-    {
-      id: 1,
-      title: 'JavaScript ES6 Features',
-      course: 'JavaScript Fundamentals',
-      instructor: 'Prof. Sarah Johnson',
-      startTime: '2025-05-02T14:00:00',
-      duration: '60 minutes',
-      meetLink: 'https://meet.google.com/abc-defg-hij',
-      description: 'In this class we will cover ES6 features including arrow functions, destructuring, spread operators, and more.'
-    },
-    {
-      id: 2,
-      title: 'React Hooks in Depth',
-      course: 'Modern Web Development',
-      instructor: 'Dr. Michael Chen',
-      startTime: '2025-05-03T15:30:00',
-      duration: '90 minutes',
-      meetLink: 'https://meet.google.com/xyz-abcd-efg',
-      description: 'A comprehensive look at React hooks including useState, useEffect, useContext, useReducer, and creating custom hooks.'
-    },
-    {
-      id: 3,
-      title: 'Database Indexing Strategies',
-      course: 'Database Management',
-      instructor: 'Prof. Rachel Garcia',
-      startTime: '2025-05-04T10:00:00',
-      duration: '75 minutes',
-      meetLink: 'https://meet.google.com/123-mnop-456',
-      description: 'Learn about database indexing strategies to optimize query performance in relational databases.'
-    }
-  ];
 
   const formatDateTime = (dateTime) => {
     const date = new Date(dateTime);
@@ -84,16 +50,6 @@ const LiveClasses = () => {
       setOpenDialog(false);
     }
   };
-
-  // Get list of enrolled course titles
-  const enrolledCourseTitles = courses
-    .filter(course => course.enrolled)
-    .map(course => course.title);
-
-  // Filter live classes for enrolled courses
-  const availableClasses = liveClasses.filter(liveClass => 
-    enrolledCourseTitles.includes(liveClass.course)
-  );
 
   // Check if class is active (can be joined)
   const isClassActive = (startTime) => {
@@ -131,7 +87,7 @@ const LiveClasses = () => {
         Live Classes
       </Typography>
       
-      {availableClasses.length === 0 ? (
+      {filteredLiveClasses.length === 0 ? (
         <Alert severity="info" sx={{ mt: 2 }}>
           No live classes are scheduled for your enrolled courses. Please check back later.
         </Alert>
@@ -142,7 +98,7 @@ const LiveClasses = () => {
           </Typography>
           
           <Grid container spacing={3}>
-            {availableClasses.map((liveClass) => {
+            {filteredLiveClasses.map((liveClass) => {
               const active = isClassActive(liveClass.startTime);
               const upcoming = isClassUpcoming(liveClass.startTime);
               const ended = isClassEnded(liveClass.startTime);
