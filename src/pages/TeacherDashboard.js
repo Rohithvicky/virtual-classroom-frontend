@@ -1,201 +1,190 @@
 import React, { useState, useContext } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Grid, 
-  Card, 
-  CardContent, 
-  Tabs, 
-  Tab, 
-  Button, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  TextField, 
-  FormControl, 
-  InputLabel, 
-  Select, 
-  MenuItem, 
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Tabs,
+  Tab,
   Paper,
-  Divider
+  Divider,
+  Avatar,
 } from '@mui/material';
-import { 
+import {
   VideoCall as VideoCallIcon,
   Assignment as AssignmentIcon,
   Quiz as QuizIcon,
   Book as BookIcon,
-  CheckCircle as CheckCircleIcon
+  CheckCircle as CheckCircleIcon,
+  Announcement as AnnouncementIcon,
+  People as PeopleIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { CoursesContext } from '../contexts/CoursesContext';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
-import TabPanel from '../components/TabPanel'; // Import TabPanel from the components folder
 
 const TeacherDashboard = () => {
-  const { courses } = useContext(CoursesContext);
+  const { courses } = useContext(CoursesContext); // Example context for courses
   const [currentTab, setCurrentTab] = useState(0);
-
-  // State for dialog controls
-  const [openQuizDialog, setOpenQuizDialog] = useState(false);
-  const [openLiveClassDialog, setOpenLiveClassDialog] = useState(false);
-  const [openContentDialog, setOpenContentDialog] = useState(false);
-  const [openAssignmentDialog, setOpenAssignmentDialog] = useState(false);
-
-  // State for form data
-  const [selectedCourse, setSelectedCourse] = useState('');
-  const [quizData, setQuizData] = useState({
-    title: '',
-    description: '',
-    startTime: new Date(),
-    duration: 30,
-    questions: []
-  });
-  const [liveClassData, setLiveClassData] = useState({
-    title: '',
-    description: '',
-    meetLink: '',
-    startTime: new Date(),
-    duration: 60
-  });
-  const [contentData, setContentData] = useState({
-    title: '',
-    description: '',
-    type: 'document',
-    content: ''
-  });
-  const [assignmentData, setAssignmentData] = useState({
-    title: '',
-    description: '',
-    dueDate: new Date(),
-    points: 10
-  });
 
   const handleTabChange = (event, newValue) => {
     setCurrentTab(newValue);
   };
 
-  const handleOpenDialog = (dialogType) => {
-    if (dialogType === 'quiz') setOpenQuizDialog(true);
-    if (dialogType === 'liveClass') setOpenLiveClassDialog(true);
-    if (dialogType === 'content') setOpenContentDialog(true);
-    if (dialogType === 'assignment') setOpenAssignmentDialog(true);
-  };
-
-  const handleCloseDialog = (dialogType) => {
-    if (dialogType === 'quiz') setOpenQuizDialog(false);
-    if (dialogType === 'liveClass') setOpenLiveClassDialog(false);
-    if (dialogType === 'content') setOpenContentDialog(false);
-    if (dialogType === 'assignment') setOpenAssignmentDialog(false);
-  };
-
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
-        <Tabs 
-          value={currentTab} 
-          onChange={handleTabChange} 
-          variant="fullWidth"
-          textColor="primary"
+    <Box sx={{ p: 3 }}>
+      {/* Overview Panel */}
+      <Typography variant="h4" fontWeight="bold" gutterBottom>
+        Teacher Dashboard
+      </Typography>
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ p: 2, textAlign: 'center' }}>
+            <Avatar sx={{ bgcolor: 'primary.main', mx: 'auto', mb: 1 }}>
+              <BookIcon />
+            </Avatar>
+            <Typography variant="h6">Total Courses</Typography>
+            <Typography variant="h4">{courses.length}</Typography>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ p: 2, textAlign: 'center' }}>
+            <Avatar sx={{ bgcolor: 'secondary.main', mx: 'auto', mb: 1 }}>
+              <PeopleIcon />
+            </Avatar>
+            <Typography variant="h6">Enrolled Students</Typography>
+            <Typography variant="h4">120</Typography> {/* Example data */}
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ p: 2, textAlign: 'center' }}>
+            <Avatar sx={{ bgcolor: 'success.main', mx: 'auto', mb: 1 }}>
+              <VideoCallIcon />
+            </Avatar>
+            <Typography variant="h6">Upcoming Classes</Typography>
+            <Typography variant="h4">5</Typography> {/* Example data */}
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ p: 2, textAlign: 'center' }}>
+            <Avatar sx={{ bgcolor: 'error.main', mx: 'auto', mb: 1 }}>
+              <QuizIcon />
+            </Avatar>
+            <Typography variant="h6">Upcoming Quizzes</Typography>
+            <Typography variant="h4">3</Typography> {/* Example data */}
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Tabs for Different Sections */}
+      <Paper sx={{ mb: 3 }}>
+        <Tabs
+          value={currentTab}
+          onChange={handleTabChange}
           indicatorColor="primary"
+          textColor="primary"
+          variant="scrollable"
+          scrollButtons="auto"
         >
-          <Tab label="Dashboard" icon={<CheckCircleIcon />} iconPosition="start" />
           <Tab label="Courses" icon={<BookIcon />} iconPosition="start" />
+          <Tab label="Students" icon={<PeopleIcon />} iconPosition="start" />
+          <Tab label="Assignments" icon={<AssignmentIcon />} iconPosition="start" />
+          <Tab label="Announcements" icon={<AnnouncementIcon />} iconPosition="start" />
+          <Tab label="Discussions" icon={<CheckCircleIcon />} iconPosition="start" />
           <Tab label="Quizzes" icon={<QuizIcon />} iconPosition="start" />
           <Tab label="Live Classes" icon={<VideoCallIcon />} iconPosition="start" />
-          <Tab label="Assignments" icon={<AssignmentIcon />} iconPosition="start" />
+          <Tab label="Profile & Settings" icon={<SettingsIcon />} iconPosition="start" />
         </Tabs>
-      </Box>
+      </Paper>
 
-      {/* Dashboard Overview Tab */}
-      <TabPanel value={currentTab} index={0}>
-        <Typography variant="h4" gutterBottom>
-          Teacher Dashboard
-        </Typography>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Paper sx={{ p: 2, borderRadius: '12px' }}>
-              <Typography variant="h6" gutterBottom>Quick Actions</Typography>
-              <Grid container spacing={2}>
-                <Grid item>
-                  <Button 
-                    variant="contained" 
-                    startIcon={<QuizIcon />}
-                    onClick={() => handleOpenDialog('quiz')}
-                  >
-                    Create Quiz
+      {/* Tab Content */}
+      {currentTab === 0 && (
+        <Box>
+          <Typography variant="h5" gutterBottom>
+            Manage Courses
+          </Typography>
+          <Grid container spacing={3}>
+            {courses.map((course) => (
+              <Grid item xs={12} sm={6} md={4} key={course.id}>
+                <Card sx={{ p: 2 }}>
+                  <Typography variant="h6">{course.title}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {course.description}
+                  </Typography>
+                  <Divider sx={{ my: 2 }} />
+                  <Button variant="contained" color="primary" fullWidth>
+                    Edit Course
                   </Button>
-                </Grid>
-                <Grid item>
-                  <Button 
-                    variant="contained" 
-                    startIcon={<VideoCallIcon />}
-                    onClick={() => handleOpenDialog('liveClass')}
-                  >
-                    Schedule Class
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <Button 
-                    variant="contained" 
-                    startIcon={<BookIcon />}
-                    onClick={() => handleOpenDialog('content')}
-                  >
-                    Add Content
-                  </Button>
-                </Grid>
-                <Grid item>
-                  <Button 
-                    variant="contained" 
-                    startIcon={<AssignmentIcon />}
-                    onClick={() => handleOpenDialog('assignment')}
-                  >
-                    Create Assignment
-                  </Button>
-                </Grid>
+                </Card>
               </Grid>
-            </Paper>
+            ))}
           </Grid>
-        </Grid>
-      </TabPanel>
+        </Box>
+      )}
 
-      {/* Add dialogs for quizzes, live classes, content, and assignments */}
-      <Dialog open={openQuizDialog} onClose={() => handleCloseDialog('quiz')} maxWidth="md" fullWidth>
-        <DialogTitle>Create New Quiz</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <FormControl fullWidth required>
-                <InputLabel>Course</InputLabel>
-                <Select
-                  value={selectedCourse}
-                  onChange={(e) => setSelectedCourse(e.target.value)}
-                  label="Course"
-                >
-                  {courses.map((course) => (
-                    <MenuItem key={course.id} value={course.id}>{course.title}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                required
-                label="Quiz Title"
-                value={quizData.title}
-                onChange={(e) => setQuizData({...quizData, title: e.target.value})}
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => handleCloseDialog('quiz')}>Cancel</Button>
-          <Button onClick={() => console.log('Quiz Created')} variant="contained">
-            Create Quiz
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {currentTab === 1 && (
+        <Box>
+          <Typography variant="h5" gutterBottom>
+            Manage Students
+          </Typography>
+          <Typography variant="body2">View and manage enrolled students.</Typography>
+        </Box>
+      )}
+
+      {currentTab === 2 && (
+        <Box>
+          <Typography variant="h5" gutterBottom>
+            Manage Assignments
+          </Typography>
+          <Typography variant="body2">Create and grade assignments.</Typography>
+        </Box>
+      )}
+
+      {currentTab === 3 && (
+        <Box>
+          <Typography variant="h5" gutterBottom>
+            Announcements
+          </Typography>
+          <Typography variant="body2">Post and manage announcements.</Typography>
+        </Box>
+      )}
+
+      {currentTab === 4 && (
+        <Box>
+          <Typography variant="h5" gutterBottom>
+            Discussions
+          </Typography>
+          <Typography variant="body2">Monitor and reply to discussions.</Typography>
+        </Box>
+      )}
+
+      {currentTab === 5 && (
+        <Box>
+          <Typography variant="h5" gutterBottom>
+            Manage Quizzes
+          </Typography>
+          <Typography variant="body2">Create and manage quizzes.</Typography>
+        </Box>
+      )}
+
+      {currentTab === 6 && (
+        <Box>
+          <Typography variant="h5" gutterBottom>
+            Live Classes
+          </Typography>
+          <Typography variant="body2">Schedule and manage live classes.</Typography>
+        </Box>
+      )}
+
+      {currentTab === 7 && (
+        <Box>
+          <Typography variant="h5" gutterBottom>
+            Profile & Settings
+          </Typography>
+          <Typography variant="body2">Update your profile and preferences.</Typography>
+        </Box>
+      )}
     </Box>
   );
 };

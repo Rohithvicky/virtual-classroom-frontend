@@ -19,22 +19,27 @@ import {
   Fade,
   Badge,
   Container,
-  Grow,
   Slide,
+  Grid,
+  Paper,
+  Avatar,
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
   AccountCircle,
-  Search as SearchIcon,
   Menu as MenuIcon,
   Dashboard,
   School,
   Assignment,
   Forum,
-  Quiz,
+  Quiz as QuizIcon,
   Close as CloseIcon,
+  VideoCall as VideoCallIcon,
+  Book as BookIcon,
+  People as PeopleIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import ProtectedRoute from './ProtectedRoute'; // Add this import
 
 // Styled components for enhanced visuals
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
@@ -43,66 +48,8 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
   transition: 'all 0.3s ease',
 }));
 
-const NavLink = styled(Typography)(({ theme, active }) => ({
-  position: 'relative',
-  color: '#fff',
-  padding: '8px 16px',
-  borderRadius: '20px',
-  textDecoration: 'none',
-  fontWeight: active ? '600' : '500',
-  fontSize: '15px',
-  transition: 'all 0.3s ease',
-  background: active ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
-  '&:hover': {
-    background: 'rgba(255, 255, 255, 0.15)',
-    transform: 'translateY(-2px)',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-  },
-}));
-
-const SearchBox = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  backgroundColor: 'rgba(255, 255, 255, 0.15)',
-  borderRadius: '20px',
-  padding: '6px 16px',
-  transition: 'all 0.3s ease',
-  border: '1px solid rgba(255, 255, 255, 0.1)',
-  '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-  },
-  '&:focus-within': {
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-  },
-}));
-
-const SearchInput = styled('input')(({ theme }) => ({
-  border: 'none',
-  outline: 'none',
-  background: 'transparent',
-  width: '100%',
-  color: '#fff',
-  fontSize: '14px',
-  '&::placeholder': {
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
-}));
-
-const StyledIconButton = styled(IconButton)(({ theme }) => ({
-  color: '#fff',
-  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  margin: '0 4px',
-  transition: 'all 0.3s ease',
-  '&:hover': {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    transform: 'scale(1.05)',
-  },
-}));
-
 const Layout = ({ children }) => {
-  const { currentUser, logout } = useAuth();
+  const { logout, role } = useAuth(); // Get the user's role from AuthContext
   const location = useLocation();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -132,8 +79,8 @@ const Layout = ({ children }) => {
     { text: 'Courses', path: '/courses', icon: <School /> },
     { text: 'Assignments', path: '/assignments', icon: <Assignment /> },
     { text: 'Discussion', path: '/discussion', icon: <Forum /> },
-    { text: 'Live Quizzes', path: '/live-quizzes', icon: <Quiz /> },
-    { text: 'Live Classes', path: '/live-classes', icon: <School /> }, // Added Live Classes
+    { text: 'Live Quizzes', path: '/live-quizzes', icon: <QuizIcon /> }, // Corrected here
+    { text: 'Live Classes', path: '/live-classes', icon: <VideoCallIcon /> },
   ];
 
   const isActive = (path) => {
@@ -198,25 +145,16 @@ const Layout = ({ children }) => {
           ))}
         </List>
         <Divider />
-        <Box sx={{ padding: 2 }}>
-          <SearchBox
-            sx={{
-              backgroundColor: '#edf2f7',
-              border: '1px solid #e2e8f0',
-              width: '100%',
-            }}
-          >
-            <SearchIcon sx={{ color: 'gray', mr: 1 }} />
-            <SearchInput
-              type="text"
-              placeholder="Search..."
-              style={{ color: '#4a5568' }}
-            />
-          </SearchBox>
-        </Box>
       </Box>
     </Slide>
   );
+
+  const teacherStats = {
+    totalCourses: 3,
+    enrolledStudents: 120,
+    upcomingClasses: 5,
+    upcomingQuizzes: 3,
+  };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -231,13 +169,13 @@ const Layout = ({ children }) => {
             }}
           >
             {isMobile && (
-              <StyledIconButton
+              <IconButton
                 edge="start"
                 onClick={toggleMobileDrawer}
                 sx={{ marginRight: 1 }}
               >
                 <MenuIcon />
-              </StyledIconButton>
+              </IconButton>
             )}
             <Typography
               variant="h6"
@@ -268,14 +206,24 @@ const Layout = ({ children }) => {
                 }}
               >
                 {menuItems.map((item) => (
-                  <NavLink
+                  <Typography
                     key={item.text}
                     component={Link}
                     to={item.path}
-                    active={isActive(item.path) ? 1 : 0}
+                    sx={{
+                      color: isActive(item.path) ? '#ffffff' : 'rgba(255, 255, 255, 0.85)',
+                      textDecoration: 'none',
+                      fontWeight: isActive(item.path) ? '600' : '400',
+                      padding: '8px 16px',
+                      borderRadius: '20px',
+                      backgroundColor: isActive(item.path) ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      },
+                    }}
                   >
                     {item.text}
-                  </NavLink>
+                  </Typography>
                 ))}
               </Box>
             )}
@@ -286,26 +234,18 @@ const Layout = ({ children }) => {
                 gap: { xs: 1, sm: 2 },
               }}
             >
-              {!isSmall && (
-                <SearchBox sx={{ width: { sm: '180px', md: '250px' } }}>
-                  <SearchIcon
-                    sx={{ color: 'rgba(255, 255, 255, 0.8)', mr: 1 }}
-                  />
-                  <SearchInput type="text" placeholder="Search..." />
-                </SearchBox>
-              )}
-              <StyledIconButton size={isSmall ? 'small' : 'medium'}>
+              <IconButton size={isSmall ? 'small' : 'medium'}>
                 <Badge badgeContent={3} color="error">
                   <NotificationsIcon />
                 </Badge>
-              </StyledIconButton>
-              <StyledIconButton
+              </IconButton>
+              <IconButton
                 size={isSmall ? 'small' : 'medium'}
                 edge="end"
                 onClick={handleProfileMenuOpen}
               >
                 <AccountCircle />
-              </StyledIconButton>
+              </IconButton>
             </Box>
           </Toolbar>
         </Container>
@@ -350,7 +290,7 @@ const Layout = ({ children }) => {
         <MenuItem
           onClick={() => {
             handleProfileMenuClose();
-            navigate('/profile'); // Navigate to the profile page
+            navigate('/profile');
           }}
           sx={{ padding: '10px 16px' }}
         >
@@ -375,9 +315,107 @@ const Layout = ({ children }) => {
             minHeight: '100vh',
           }}
         >
-          {children}
+          <main>{children}</main>
         </Box>
       </Fade>
+      {/* Conditional Navigation Bar */}
+      {role === 'teacher' ? (
+        // Teacher Stats Navigation Bar
+        <Box sx={{ p: 2, backgroundColor: '#f7fafc', boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)' }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper sx={{ p: 2, textAlign: 'center', borderRadius: '12px' }}>
+                <Avatar sx={{ bgcolor: 'primary.main', mx: 'auto', mb: 1 }}>
+                  <BookIcon />
+                </Avatar>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Total Courses
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#4361ee' }}>
+                  {teacherStats.totalCourses}
+                </Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper sx={{ p: 2, textAlign: 'center', borderRadius: '12px' }}>
+                <Avatar sx={{ bgcolor: 'secondary.main', mx: 'auto', mb: 1 }}>
+                  <PeopleIcon />
+                </Avatar>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Enrolled Students
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#4361ee' }}>
+                  {teacherStats.enrolledStudents}
+                </Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper sx={{ p: 2, textAlign: 'center', borderRadius: '12px' }}>
+                <Avatar sx={{ bgcolor: 'success.main', mx: 'auto', mb: 1 }}>
+                  <VideoCallIcon />
+                </Avatar>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Upcoming Classes
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#4361ee' }}>
+                  {teacherStats.upcomingClasses}
+                </Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Paper sx={{ p: 2, textAlign: 'center', borderRadius: '12px' }}>
+                <Avatar sx={{ bgcolor: 'error.main', mx: 'auto', mb: 1 }}>
+                  <QuizIcon />
+                </Avatar>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Upcoming Quizzes
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: '#4361ee' }}>
+                  {teacherStats.upcomingQuizzes}
+                </Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+        </Box>
+      ) : (
+        <ProtectedRoute allowedRoles={['student']}>
+          {/* Student Navigation Bar */}
+          <Box sx={{ p: 2, backgroundColor: '#3a86ff', color: 'white' }}>
+            <Grid container spacing={2} justifyContent="center">
+              <Grid item>
+                <Typography variant="h6" sx={{ cursor: 'pointer' }}>
+                  Dashboard
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Typography variant="h6" sx={{ cursor: 'pointer' }}>
+                  Courses
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Typography variant="h6" sx={{ cursor: 'pointer' }}>
+                  Assignments
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Typography variant="h6" sx={{ cursor: 'pointer' }}>
+                  Discussion
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Typography variant="h6" sx={{ cursor: 'pointer' }}>
+                  Live Quizzes
+                </Typography>
+              </Grid>
+              <Grid item>
+                <Typography variant="h6" sx={{ cursor: 'pointer' }}>
+                  Live Classes
+                </Typography>
+              </Grid>
+            </Grid>
+          </Box>
+        </ProtectedRoute>
+      )}
     </Box>
   );
 };

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Container,
   Box,
@@ -11,7 +11,8 @@ import {
   Paper,
   Checkbox,
   FormControlLabel,
-  Alert
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,41 +22,85 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  
+  const { login, isAuthenticated, role } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get redirect location from state or use default
+  const from = location.state?.from?.pathname || 
+    (role === 'teacher' ? '/teacher-dashboard' : '/dashboard');
+
+  // Log authentication state for debugging
+  console.log('Login Component:', { isAuthenticated, role, from });
+  
+  // If already logged in, redirect to appropriate dashboard
+  useEffect(() => {
+    if (isAuthenticated) {
+      console.log('Already authenticated, redirecting to:', from);
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, role, navigate, from]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validate input
+    if (!email) {
+      setError('Please enter an email address');
+      return;
+    }
+    
+    if (!password) {
+      setError('Please enter a password');
+      return;
+    }
+
     try {
       setError('');
       setLoading(true);
+
+      // Determine role based on email (for demo purposes)
+      const role = email.includes('teacher') ? 'teacher' : 'student';
+      const name = email.split('@')[0];
+
+      console.log('Attempting login with:', { email, role, name });
       
-      // Simulate a successful login
-      const role = email.includes('teacher') ? 'Teacher' : 'Student';
-      await login({ name: 'Demo User', email, role }, 'mock-token');
+      // Call login function
+      await login({ name, email, role }, 'mock-token');
       
-      // Navigate to the respective dashboard
-      if (role === 'Teacher') {
-        navigate('/teacher-dashboard');
-      } else {
-        navigate('/dashboard');
-      }
+      // Navigation will be handled by the useEffect
     } catch (err) {
+      console.error('Login error:', err);
       setError('Failed to sign in. Please check your credentials.');
-      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDummyLogin = (role) => {
-    if (role === 'Student') {
-      setEmail('student@example.com');
-      setPassword('student123');
-    } else if (role === 'Teacher') {
-      setEmail('teacher@example.com');
-      setPassword('teacher123');
+  const handleDummyLogin = async (role) => {
+    try {
+      setError('');
+      setLoading(true);
+
+      // Set dummy credentials based on the role
+      const dummyCredentials = {
+        name: `Demo ${role}`,
+        email: role === 'Student' ? 'student@example.com' : 'teacher@example.com',
+        role: role.toLowerCase()
+      };
+
+      console.log('Using dummy credentials:', dummyCredentials);
+
+      // Call login function
+      await login(dummyCredentials, 'mock-token');
+      
+      // Navigation will be handled by the useEffect
+    } catch (err) {
+      console.error('Dummy login error:', err);
+      setError('Failed to login with test account.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,7 +161,7 @@ const Login = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              Sign In
+              {loading ? <CircularProgress size={24} /> : 'Sign In'}
             </Button>
             <Grid container>
               <Grid item xs>
@@ -137,7 +182,7 @@ const Login = () => {
           </Box>
           <Box sx={{ mt: 3, width: '100%' }}>
             <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
-              Or use dummy credentials for testing:
+              Or use test accounts:
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
@@ -146,8 +191,9 @@ const Login = () => {
                   variant="outlined"
                   color="primary"
                   onClick={() => handleDummyLogin('Student')}
+                  disabled={loading}
                 >
-                  Login as Student
+                  {loading ? <CircularProgress size={24} /> : 'Login as Student'}
                 </Button>
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -156,8 +202,9 @@ const Login = () => {
                   variant="outlined"
                   color="secondary"
                   onClick={() => handleDummyLogin('Teacher')}
+                  disabled={loading}
                 >
-                  Login as Teacher
+                  {loading ? <CircularProgress size={24} /> : 'Login as Teacher'}
                 </Button>
               </Grid>
             </Grid>
