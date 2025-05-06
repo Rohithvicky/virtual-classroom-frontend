@@ -40,6 +40,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { courses } from './CourseList';
+import { testBackendConnection } from "../services/api";
 
 // Custom components
 const AnimatedCard = motion(Paper);
@@ -104,6 +105,8 @@ const Dashboard = () => {
     assignments: false,
     announcements: false,
   }); // For collapsible sections
+
+  const [backendMessage, setBackendMessage] = useState("");
 
   // Fetch data
   useEffect(() => {
@@ -181,6 +184,12 @@ const Dashboard = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [currentUser]);
+
+  useEffect(() => {
+    testBackendConnection().then((message) => {
+      setBackendMessage(message);
+    });
+  }, []);
 
   // Helper functions
   const getPriorityColor = (priority) => {
@@ -644,6 +653,7 @@ const Dashboard = () => {
           </AnimatedCard>
         </Grid>
       </Grid>
+      <p>Backend status: {backendMessage}</p>
     </Box>
   );
 };
