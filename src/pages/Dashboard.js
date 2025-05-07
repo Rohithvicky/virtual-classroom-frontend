@@ -40,7 +40,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { testBackendConnection } from "../services/api";
+import { testBackendConnection } from '../services/api';
 
 // Custom components
 const AnimatedCard = motion(Paper);
