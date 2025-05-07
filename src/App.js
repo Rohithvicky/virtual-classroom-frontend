@@ -16,37 +16,23 @@ import Discussion from './pages/Discussion';
 import LiveQuizzes from './pages/LiveQuizzes';
 import LiveClasses from './pages/LiveClasses';
 
-const RoleBasedRedirect = () => {
-  const { user } = useAuth();
-
-  if (user.role === 'student') {
-    return <Navigate to="/student/dashboard" />;
-  } else if (user.role === 'teacher') {
-    return <Navigate to="/teacher/dashboard" />;
-  } else {
-    return <Navigate to="/login" />;
-  }
-};
-
 function App() {
   return (
     <AuthProvider>
       <CoursesProvider>
         <Router>
           <Routes>
+            {/* Default route */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             
-            {/* Home route - redirects based on role */}
-            <Route path="/" element={<RoleBasedRedirect />} />
-            
             {/* Student routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute allowedRoles={['student']}>
-                <Layout>
-                  <Dashboard />
-                </Layout>
+                <Dashboard />
               </ProtectedRoute>
             } />
             <Route path="/courses" element={
@@ -88,9 +74,7 @@ function App() {
             {/* Teacher routes */}
             <Route path="/teacher-dashboard" element={
               <ProtectedRoute allowedRoles={['teacher']}>
-                <Layout>
-                  <TeacherDashboard />
-                </Layout>
+                <TeacherDashboard />
               </ProtectedRoute>
             } />
             <Route path="/teacher/courses" element={

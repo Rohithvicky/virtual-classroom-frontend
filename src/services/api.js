@@ -123,7 +123,7 @@ export const discussionService = {
 // In services/api.js
 export const testBackendConnection = async () => {
   try {
-    const response = await api.get('/auth/test');
+    const response = await api.get('/test');
     return "Backend connected successfully";
   } catch (error) {
     console.error('Backend connection error:', error);

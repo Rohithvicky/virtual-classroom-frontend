@@ -1,80 +1,31 @@
 // src/contexts/AuthContext.js
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
 
-  // Check for existing auth on initial load
-  useEffect(() => {
-    const checkAuth = () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        const savedUser = localStorage.getItem('user');
-        
-        if (token && savedUser) {
-          setUser(JSON.parse(savedUser));
-        }
-      } catch (error) {
-        console.error('Error restoring authentication:', error);
-        // Clear potentially corrupted auth data
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    checkAuth();
-  }, []);
-
-  const login = async (userData, token) => {
+  const login = (user) => {
     try {
-      console.log('Logging in with:', userData);
-      
-      // Save auth data to localStorage
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Update the user state
-      setUser(userData);
-      
-      return true;
-    } catch (err) {
-      console.error('Login failed:', err);
-      throw new Error('Login failed');
+      // Update the currentUser state
+      setCurrentUser(user);
+      console.log('Login successful:', user);
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
     }
   };
 
   const logout = () => {
-    // Clear the token and user state
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    setUser(null);
-  };
-
-  // Calculate authentication status
-  const isAuthenticated = user !== null;
-  
-  // Get role safely
-  const role = user && user.role ? user.role : null;
-
-  // For debugging
-  console.log('Auth Context State:', { isAuthenticated, role, user });
-
-  const value = {
-    user,
-    login,
-    logout,
-    isAuthenticated,
-    role,
-    loading
+    // Reset the currentUser state
+    setCurrentUser(null);
+    console.log('Logged out successfully');
   };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ currentUser, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -86,4 +37,20 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+};
+
+const ProtectedRoute = ({ allowedRoles, children }) => {
+  const { currentUser } = useAuth();
+
+  console.log('ProtectedRoute - Current User:', currentUser);
+
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!allowedRoles.includes(currentUser.role)) {
+    return <Navigate to="/not-authorized" replace />;
+  }
+
+  return children;
 };
