@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Box, Grid, Card, CardContent, Typography, CircularProgress, Button } from '@mui/material';
-import { CoursesContext } from '../contexts/CoursesContext';
+import { CoursesContext } from '../contexts/CoursesContext'; // Import CoursesContext
 
 const Courses = () => {
   const { courses, setCourses } = useContext(CoursesContext); // Fetch courses from context
@@ -17,7 +17,7 @@ const Courses = () => {
     const updatedCourses = courses.map((course) =>
       course.id === courseId ? { ...course, enrolled: true } : course
     );
-    setCourses(updatedCourses);
+    setCourses(updatedCourses); // Update courses in context
   };
 
   return (

@@ -43,6 +43,36 @@ const Login = () => {
     }
   };
 
+  const handleDummyLogin = async (role) => {
+    try {
+      setError('');
+      setLoading(true);
+
+      const dummyCredentials = {
+        name: `Demo ${role}`,
+        email: `${role.toLowerCase()}@example.com`,
+        role: role.toLowerCase(),
+      };
+
+      console.log('Logging in as:', dummyCredentials);
+
+      // Simulate login
+      await login(dummyCredentials, 'mock-token');
+
+      // Redirect based on role
+      if (role.toLowerCase() === 'student') {
+        navigate('/dashboard');
+      } else if (role.toLowerCase() === 'teacher') {
+        navigate('/teacher');
+      }
+    } catch (err) {
+      setError('Failed to login with test account.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Container component="main" maxWidth="xs">
       <Paper elevation={3} sx={{ mt: 8, p: 4 }}>
@@ -118,6 +148,31 @@ const Login = () => {
                 </Link>
               </Grid>
             </Grid>
+          </Box>
+          <Box sx={{ mt: 4, width: '100%' }}>
+            <Typography variant="h6" align="center" gutterBottom>
+              Test Login
+            </Typography>
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{ mt: 1 }}
+              onClick={() => handleDummyLogin('Student')}
+              disabled={loading}
+            >
+              {loading ? 'Logging in...' : 'Login as Student'}
+            </Button>
+            <Button
+              fullWidth
+              variant="contained"
+              color="secondary"
+              sx={{ mt: 2 }}
+              onClick={() => handleDummyLogin('Teacher')}
+              disabled={loading}
+            >
+              {loading ? 'Logging in...' : 'Login as Teacher'}
+            </Button>
           </Box>
         </Box>
       </Paper>

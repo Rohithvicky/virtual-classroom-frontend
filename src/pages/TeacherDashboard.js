@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
+import { Navigate } from 'react-router-dom'; // Import Navigate for redirection
 import {
   Box,
   Typography,
@@ -28,11 +29,13 @@ import {
   Class as ClassIcon,
 } from '@mui/icons-material';
 import { CoursesContext } from '../contexts/CoursesContext';
+import { useAuth } from '../contexts/AuthContext'; // Import AuthContext for role checking
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import TabPanel from '../components/TabPanel';
 
 const TeacherDashboard = () => {
+  const { currentUser } = useAuth(); // Get the current user from AuthContext
   const {
     courses = [],
     setCourses,
@@ -142,6 +145,16 @@ const TeacherDashboard = () => {
     }
     handleCloseDialog();
   };
+
+  // Restrict access to teachers only
+  if (!currentUser) {
+    return <Navigate to="/login" replace />; // Redirect to login if not authenticated
+  }
+  
+  // Strict role-based access control
+  if (currentUser.role !== 'teacher') {
+    return <Navigate to="/dashboard" replace />; // Redirect to student dashboard if not a teacher
+  }
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>

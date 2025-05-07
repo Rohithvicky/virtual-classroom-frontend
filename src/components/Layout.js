@@ -19,8 +19,11 @@ import {
   Fade,
   Badge,
   Container,
-  Grow,
   Slide,
+  Avatar,
+  Button,
+  Tooltip,
+  Chip, // Ensure Chip is imported here
 } from '@mui/material';
 import {
   Notifications as NotificationsIcon,
@@ -28,11 +31,13 @@ import {
   Search as SearchIcon,
   Menu as MenuIcon,
   Dashboard,
-  School,
   Assignment,
   Forum,
   Quiz,
   Close as CloseIcon,
+  VideoCall as VideoCallIcon,
+  School,
+  Lock as LockIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -43,9 +48,9 @@ const StyledAppBar = styled(AppBar)(({ theme }) => ({
   transition: 'all 0.3s ease',
 }));
 
-const NavLink = styled(Typography)(({ theme, active }) => ({
+const NavLink = styled(Typography)(({ theme, active, disabled }) => ({
   position: 'relative',
-  color: '#fff',
+  color: disabled ? 'rgba(255, 255, 255, 0.5)' : '#fff',
   padding: '8px 16px',
   borderRadius: '20px',
   textDecoration: 'none',
@@ -53,10 +58,11 @@ const NavLink = styled(Typography)(({ theme, active }) => ({
   fontSize: '15px',
   transition: 'all 0.3s ease',
   background: active ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+  cursor: disabled ? 'not-allowed' : 'pointer',
   '&:hover': {
-    background: 'rgba(255, 255, 255, 0.15)',
-    transform: 'translateY(-2px)',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+    background: disabled ? 'transparent' : 'rgba(255, 255, 255, 0.15)',
+    transform: disabled ? 'none' : 'translateY(-2px)',
+    boxShadow: disabled ? 'none' : '0 4px 12px rgba(0, 0, 0, 0.1)',
   },
 }));
 
@@ -127,17 +133,35 @@ const Layout = ({ children }) => {
     setMobileDrawerOpen(!mobileDrawerOpen);
   };
 
+  // Define menu items for different user roles
   const menuItems = [
-    { text: 'Dashboard', path: '/', icon: <Dashboard /> },
-    { text: 'Courses', path: '/courses', icon: <School /> },
-    { text: 'Assignments', path: '/assignments', icon: <Assignment /> },
-    { text: 'Discussion', path: '/discussion', icon: <Forum /> },
-    { text: 'Live Quizzes', path: '/live-quizzes', icon: <Quiz /> },
-    { text: 'Live Classes', path: '/live-classes', icon: <School /> }, // Added Live Classes
+    { text: 'Dashboard', path: '/dashboard', icon: <Dashboard />, roles: ['student'] },
+    { text: 'Courses', path: '/courses', icon: <School />, roles: ['student'] },
+    { text: 'Assignments', path: '/assignments', icon: <Assignment />, roles: ['student'] },
+    { text: 'Live Quizzes', path: '/live-quizzes', icon: <Quiz />, roles: ['student'] },
+    { text: 'Live Classes', path: '/live-classes', icon: <VideoCallIcon />, roles: ['student'] },
+    { text: 'Discussion', path: '/discussion', icon: <Forum />, roles: ['student'] },
   ];
+
+  // Filter menu items based on user role
+  const displayMenuItems = menuItems.map((item) => {
+    const isAccessible = item.roles.includes(currentUser?.role);
+    return {
+      ...item,
+      disabled: !isAccessible,
+    };
+  });
 
   const isActive = (path) => {
     return location.pathname === path;
+  };
+
+  const handleNavClick = (item) => {
+    if (item.disabled) {
+      // Optional: Show a notification that this feature is not available for teachers
+      return;
+    }
+    navigate(item.path);
   };
 
   const drawerContent = (
@@ -160,13 +184,11 @@ const Layout = ({ children }) => {
         </Box>
         <Divider />
         <List>
-          {menuItems.map((item) => (
+          {displayMenuItems.map((item) => (
             <ListItem
               button
-              component={Link}
-              to={item.path}
               key={item.text}
-              onClick={toggleMobileDrawer}
+              onClick={item.disabled ? null : () => { toggleMobileDrawer(); navigate(item.path); }}
               sx={{
                 backgroundColor: isActive(item.path)
                   ? 'rgba(67, 97, 238, 0.1)'
@@ -175,8 +197,10 @@ const Layout = ({ children }) => {
                   ? '4px solid #4361ee'
                   : '4px solid transparent',
                 transition: 'all 0.2s ease',
+                opacity: item.disabled ? 0.5 : 1,
+                cursor: item.disabled ? 'not-allowed' : 'pointer',
                 '&:hover': {
-                  backgroundColor: 'rgba(67, 97, 238, 0.05)',
+                  backgroundColor: item.disabled ? 'transparent' : 'rgba(67, 97, 238, 0.05)',
                 },
               }}
             >
@@ -185,7 +209,7 @@ const Layout = ({ children }) => {
                   color: isActive(item.path) ? '#4361ee' : 'inherit',
                 }}
               >
-                {item.icon}
+                {item.disabled ? <LockIcon /> : item.icon}
               </ListItemIcon>
               <ListItemText
                 primary={item.text}
@@ -267,15 +291,33 @@ const Layout = ({ children }) => {
                   flexGrow: 1,
                 }}
               >
-                {menuItems.map((item) => (
-                  <NavLink
-                    key={item.text}
-                    component={Link}
-                    to={item.path}
-                    active={isActive(item.path) ? 1 : 0}
+                {displayMenuItems.map((item) => (
+                  <Tooltip 
+                    key={item.text} 
+                    title={item.disabled ? `${item.text} (Not available for ${currentUser?.role}s)` : ''}
+                    arrow
                   >
-                    {item.text}
-                  </NavLink>
+                    <Box onClick={() => handleNavClick(item)}>
+                      <NavLink
+                        component={item.disabled ? 'div' : Link}
+                        to={item.disabled ? null : item.path}
+                        active={isActive(item.path) ? 1 : 0}
+                        disabled={item.disabled ? 1 : 0}
+                      >
+                        {item.text}
+                        {item.disabled && (
+                          <LockIcon 
+                            fontSize="small" 
+                            sx={{ 
+                              ml: 0.5, 
+                              fontSize: '0.7rem', 
+                              verticalAlign: 'text-top' 
+                            }} 
+                          />
+                        )}
+                      </NavLink>
+                    </Box>
+                  </Tooltip>
                 ))}
               </Box>
             )}
@@ -340,17 +382,23 @@ const Layout = ({ children }) => {
       >
         <Box sx={{ padding: '8px 16px', textAlign: 'center' }}>
           <Typography variant="subtitle1" fontWeight="bold">
-            User Name
+            {currentUser?.name || 'User Name'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            user@example.com
+            {currentUser?.email || 'user@example.com'}
           </Typography>
+          <Chip 
+            label={currentUser?.role || 'User'} 
+            size="small" 
+            color={currentUser?.role === 'teacher' ? 'primary' : 'secondary'}
+            sx={{ mt: 1 }}
+          />
         </Box>
         <Divider />
         <MenuItem
           onClick={() => {
             handleProfileMenuClose();
-            navigate('/profile'); // Navigate to the profile page
+            navigate('/profile');
           }}
           sx={{ padding: '10px 16px' }}
         >

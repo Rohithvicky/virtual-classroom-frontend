@@ -1,59 +1,45 @@
 import React, { useState, useEffect, useMemo, useContext } from 'react';
-import { CoursesContext } from '../contexts/CoursesContext';
-import {
-  Typography,
-  Grid,
-  Paper,
-  Box,
-  Card,
-  CardContent,
-  CardActions,
-  Button,
-  Chip,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  CircularProgress,
-  Avatar,
-  useTheme,
-  TextField,
-  Alert,
-  Skeleton,
-  Collapse,
-  IconButton
+import { 
+  Typography, Grid, Paper, Box, CardContent, CardActions, Button, Chip, Divider,
+  List, ListItem, ListItemText, ListItemIcon, Skeleton, Collapse, IconButton, Badge, LinearProgress, TextField, Alert
 } from '@mui/material';
 import {
-  Assignment as AssignmentIcon,
   Announcement as AnnouncementIcon,
   School as SchoolIcon,
-  CheckCircle as CheckCircleIcon,
   TrendingUp as TrendingUpIcon,
   Person as PersonIcon,
   PriorityHigh as PriorityHighIcon,
-  Download as DownloadIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  Search as SearchIcon
+  Search as SearchIcon,
+  CalendarToday as CalendarIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '@mui/material/styles';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { testBackendConnection } from '../services/api';
+import { CoursesContext } from '../contexts/CoursesContext';
+import Announcements from './Announcements';
 
-// Custom components
+// Animated components
 const AnimatedCard = motion(Paper);
 const AnimatedButton = motion(Button);
 
-// Color scheme
+// Color scheme and constants
 const colors = {
   primary: '#4a148c',
   secondary: '#ff6f00',
   success: '#2e7d32',
   warning: '#ed6c02',
   error: '#d32f2f',
-  info: '#0288d1'
+  info: '#0288d1',
+  lightPurple: '#f3e5f5',
+  lightOrange: '#fff3e0',
+  lightGreen: '#e8f5e9',
+  darkPurpleTransparent: 'rgba(74, 20, 140, 0.3)',
+  darkOrangeTransparent: 'rgba(255, 111, 0, 0.1)',
+  darkGreenTransparent: 'rgba(46, 125, 50, 0.1)',
+  whiteTransparent: 'rgba(255,255,255,0.05)',
 };
 
 // Animations
@@ -61,174 +47,61 @@ const cardAnimation = {
   hover: {
     y: -5,
     boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-    transition: { duration: 0.3 }
-  }
-};
-
-const buttonAnimation = {
-  hover: {
-    scale: 1.05,
-    transition: { duration: 0.2 }
+    transition: { duration: 0.3 },
   },
-  tap: {
-    scale: 0.98
-  }
+};
+const buttonAnimation = {
+  hover: { scale: 1.05, transition: { duration: 0.2 } },
+  tap: { scale: 0.98 },
 };
 
 const Dashboard = () => {
   const { currentUser } = useAuth();
   const theme = useTheme();
   const navigate = useNavigate();
-  const { courses, enrolledCourses, filteredAnnouncements, filteredLiveQuizzes, filteredLiveClasses } = useContext(CoursesContext);
+  const { 
+    courses, 
+    filteredAssignments, 
+    filteredLiveClasses 
+  } = useContext(CoursesContext);
 
-  // State for data fetching
-  const [upcomingAssignments, setUpcomingAssignments] = useState([]);
-  const [announcements, setAnnouncements] = useState([]);
-  const [stats, setStats] = useState({
-    enrolledCourses: 0,
-    pendingAssignments: 0,
-    averageProgress: 0,
-  });
-  const [profileCompletion, setProfileCompletion] = useState(0);
-  const [loading, setLoading] = useState({
-    courses: true,
-    assignments: true,
-    announcements: true,
-    stats: true,
-    profile: true,
-  });
-  const [error, setError] = useState(null);
-  const [mobileView, setMobileView] = useState(window.innerWidth < 900);
+  // State
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedSection, setExpandedSection] = useState({ courses: true });
 
-  // Add missing state hooks
-  const [expandedSection, setExpandedSection] = useState({
-    assignments: false,
-    announcements: false,
-  }); // For collapsible sections
-
-  const [backendMessage, setBackendMessage] = useState("");
-
-  // Fetch data
+  // Filter enrolled courses
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setError(null);
+    const enrolled = courses.filter((course) => course.enrolled === true);
+    setEnrolledCourses(enrolled);
+    setLoading(false);
+  }, [courses]);
 
-        // Simulate API calls in parallel
-        const [mockAssignments, mockAnnouncements] = await Promise.all([
-          new Promise(resolve => setTimeout(() => {
-            resolve([
-              { id: 1, title: 'Programming Assignment #3', course: 'Java Programming', dueDate: '2025-05-02', priority: 'high' },
-              { id: 2, title: 'Data Science Project Proposal', course: 'Foundations of Data Science', dueDate: '2025-05-05', priority: 'medium' },
-            ]);
-          }, 200)), // Reduced delay to 200ms
-          new Promise(resolve => setTimeout(() => {
-            resolve([
-              { id: 1, title: 'Welcome to Java Programming!', text: 'Course starts on May 1st', date: '2025-04-25' },
-              { id: 2, title: 'Foundations of Data Science Update', text: 'New resources added for Week 2', date: '2025-04-24' },
-            ]);
-          }, 200)), // Reduced delay to 200ms
-        ]);
+  // Filter courses based on search query
+  const filteredCourses = useMemo(
+    () =>
+      enrolledCourses.filter((course) =>
+        course.title.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    [enrolledCourses, searchQuery]
+  );
 
-        // Update state with fetched data
-        setUpcomingAssignments(mockAssignments);
-        setAnnouncements(mockAnnouncements);
-        setStats({
-          enrolledCourses: enrolledCourses.length,
-          pendingAssignments: mockAssignments.length,
-          averageProgress: enrolledCourses.length > 0
-            ? Math.round(enrolledCourses.reduce((sum, course) => sum + course.progress, 0) / enrolledCourses.length)
-            : 0,
-        });
-        setProfileCompletion(80);
-
-        setLoading({
-          courses: false,
-          assignments: false,
-          announcements: false,
-          stats: false,
-          profile: false,
-        });
-      } catch (err) {
-        console.error('Failed to fetch data:', err);
-        setError('Failed to load dashboard data. Please try again later.');
-        setLoading({
-          courses: false,
-          assignments: false,
-          announcements: false,
-          stats: false,
-          profile: false,
-        });
-      }
-    };
-
-    fetchData();
-
-    // Handle responsiveness
-    const handleResize = () => {
-      setMobileView(window.innerWidth < 900);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [currentUser, enrolledCourses]);
-
-  useEffect(() => {
-    testBackendConnection().then((message) => {
-      setBackendMessage(message);
-    });
-  }, []);
-
-  // Helper functions
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high': return colors.error;
-      case 'medium': return colors.warning;
-      case 'low': return colors.success;
-      default: return colors.info;
-    }
-  };
-
-  const getDueText = (dueDate) => {
-    const daysLeft = Math.ceil((new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24));
-    return daysLeft <= 0 ? "Due now" : `Due in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}`;
-  };
-
-  const exportToCalendar = () => {
-    // In a real app, this would generate an iCal file
-    alert('Export functionality would generate an iCal file in a real application');
-  };
-
+  // Expand toggle
   const toggleSection = (section) => {
-    setExpandedSection(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
+    setExpandedSection((prev) => ({ ...prev, [section]: !prev[section] }));
   };
-
-  if (error) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-        <Button 
-          variant="contained" 
-          onClick={() => window.location.reload()}
-        >
-          Retry
-        </Button>
-      </Box>
-    );
-  }
 
   return (
-    <Box sx={{ 
-      px: { xs: 2, md: 4 }, 
-      py: 3, 
-      bgcolor: theme.palette.mode === 'light' ? '#f8f9fa' : '#121212',
-      minHeight: '100vh'
-    }}>
+    <Box
+      sx={{
+        px: { xs: 2, sm: 3, md: 4 },
+        py: 4,
+        bgcolor: theme.palette.mode === 'light' ? '#f8f9fa' : '#121212',
+        minHeight: '100vh',
+        fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
+      }}
+    >
       {/* Welcome Banner */}
       <AnimatedCard
         initial={{ opacity: 0, y: 20 }}
@@ -236,512 +109,276 @@ const Dashboard = () => {
         transition={{ duration: 0.5 }}
         whileHover="hover"
         sx={{
-          p: { xs: 3, md: 4 },
-          mb: 5,
+          maxWidth: 1200,
+          mx: 'auto',
+          p: { xs: 3, md: 5 },
+          mb: 6,
           background: `linear-gradient(135deg, ${colors.primary}, #7b1fa2)`,
-          color: '#fff',
-          borderRadius: 3,
-          boxShadow: 3,
+          color: 'white',
+          borderRadius: 4,
+          boxShadow: '0 4px 18px rgba(74, 20, 140, 0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexDirection: { xs: 'column', md: 'row' },
+          gap: { xs: 3, md: 0 },
         }}
       >
-        <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
-          <Grid container alignItems="center" spacing={3}>
-            <Grid item xs={12} md={8}>
-              <Typography variant="h4" gutterBottom fontWeight="bold">
-                Welcome back, {currentUser?.name || 'Student'}!
-              </Typography>
-              <Typography variant="body1" sx={{ mb: 2, opacity: 0.9 }}>
-                Here's what's happening with your courses today
-              </Typography>
-              <AnimatedButton
-                variant="contained"
-                color="secondary"
-                whileHover={buttonAnimation.hover}
-                whileTap={buttonAnimation.tap}
-                sx={{ 
-                  bgcolor: colors.secondary,
-                  '&:hover': { bgcolor: '#ff8f00' },
-                  borderRadius: 2,
-                  px: 4,
-                  py: 1
-                }}
-                onClick={() => navigate('/courses')}
-                aria-label="Explore courses"
-              >
-                Explore Courses
-              </AnimatedButton>
-            </Grid>
-            <Grid item xs={12} md={4} sx={{ display: { xs: 'none', md: 'block' } }}>
-              <SchoolIcon sx={{ fontSize: 120, opacity: 0.2, float: 'right' }} />
-            </Grid>
-          </Grid>
+        <Box sx={{ flex: 1 }}>
+          <Typography variant="h4" fontWeight={700} mb={1} component="h1">
+            Welcome back, {currentUser?.name || 'Student'}!
+          </Typography>
+          <Typography variant="subtitle1" sx={{ opacity: 0.85, mb: 3 }}>
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </Typography>
+          <AnimatedButton
+            variant="contained"
+            color="secondary"
+            whileHover={buttonAnimation.hover}
+            whileTap={buttonAnimation.tap}
+            sx={{
+              bgcolor: colors.secondary,
+              color: '#fff',
+              px: 5,
+              py: 1.5,
+              fontWeight: 'bold',
+              borderRadius: 3,
+              boxShadow: '0 3px 10px rgba(255, 111, 0, 0.6)',
+              '&:hover': { bgcolor: '#ff8f00' },
+              textTransform: 'none',
+            }}
+            onClick={() => navigate('/courses')}
+          >
+            Explore Courses
+          </AnimatedButton>
+        </Box>
+        <Box sx={{ display: { xs: 'none', md: 'block' }, opacity: 0.15 }}>
+          <SchoolIcon sx={{ fontSize: 140 }} />
         </Box>
       </AnimatedCard>
 
-      {/* Stats Overview */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={4}>
-          {loading.profile ? (
-            <Skeleton variant="rectangular" height={200} sx={{ borderRadius: 3 }} />
-          ) : (
-            <AnimatedCard 
-              variants={cardAnimation}
-              whileHover="hover"
+      {/* Main Content */}
+      <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+        <Grid container spacing={6}>
+          {/* Left Column */}
+          <Grid item xs={12} md={8}>
+            {/* My Courses Section */}
+            <AnimatedCard
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
               sx={{
-                p: 3,
-                borderRadius: 3,
-                bgcolor: 'background.paper',
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column'
+                mb: 5,
+                borderRadius: 4,
+                overflow: 'hidden',
+                boxShadow: '0 2px 16px rgba(74, 20, 140, 0.15)',
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ bgcolor: '#e3f2fd', color: colors.info, mr: 2 }}>
-                  <PersonIcon />
-                </Avatar>
-                <Typography variant="h6">Profile Completion</Typography>
-              </Box>
-              <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <Box sx={{ position: 'relative', display: 'inline-flex', alignSelf: 'center' }}>
-                  <CircularProgress 
-                    variant="determinate" 
-                    value={profileCompletion} 
-                    size={120}
-                    thickness={4}
-                    sx={{ color: colors.success }}
+              <Box
+                sx={{
+                  p: 3,
+                  bgcolor: theme.palette.mode === 'light' ? colors.lightPurple : colors.darkPurpleTransparent,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                }}
+              >
+                <Typography variant="h6" fontWeight={700} color={colors.primary}>
+                  My Courses
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <TextField
+                    size="small"
+                    placeholder="Search courses..."
+                    variant="outlined"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    InputProps={{
+                      startAdornment: <SearchIcon sx={{ mr: 1, color: 'action.active' }} />,
+                    }}
+                    sx={{ mr: 1, width: 240 }}
                   />
-                  <Box
-                    sx={{
-                      top: 0,
-                      left: 0,
-                      bottom: 0,
-                      right: 0,
-                      position: 'absolute',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Typography variant="h5" component="div" fontWeight="bold">
-                      {profileCompletion}%
-                    </Typography>
-                  </Box>
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 2, textAlign: 'center' }}>
-                  {profileCompletion < 100 ? 'Complete your profile for better recommendations' : 'Profile complete!'}
-                </Typography>
-              </Box>
-              {profileCompletion < 100 && (
-                <Button 
-                  size="small" 
-                  color="primary" 
-                  sx={{ mt: 2, alignSelf: 'flex-end' }}
-                  startIcon={<CheckCircleIcon />}
-                  onClick={() => navigate('/profile')}
-                >
-                  Complete Profile
-                </Button>
-              )}
-            </AnimatedCard>
-          )}
-        </Grid>
-
-        <Grid item xs={12} md={8}>
-          <Grid container spacing={3}>
-            {[
-              { 
-                title: 'Enrolled Courses', 
-                value: stats.enrolledCourses, 
-                icon: <SchoolIcon />,
-                color: colors.primary,
-                bgcolor: '#f3e5f5',
-                loading: loading.stats
-              },
-              { 
-                title: 'Pending Assignments', 
-                value: stats.pendingAssignments, 
-                icon: <AssignmentIcon />,
-                color: colors.warning,
-                bgcolor: '#fff3e0',
-                loading: loading.stats
-              },
-              { 
-                title: 'Average Progress', 
-                value: `${stats.averageProgress}%`, 
-                icon: <TrendingUpIcon />,
-                color: colors.success,
-                bgcolor: '#e8f5e9',
-                loading: loading.stats
-              }
-            ].map((stat, index) => (
-              <Grid item xs={12} sm={4} key={index}>
-                {stat.loading ? (
-                  <Skeleton variant="rectangular" height={120} sx={{ borderRadius: 3 }} />
-                ) : (
-                  <AnimatedCard
-                    variants={cardAnimation}
-                    whileHover="hover"
-                    sx={{
-                      p: 3,
-                      borderRadius: 3,
-                      bgcolor: 'background.paper',
-                      height: '100%'
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Avatar sx={{ bgcolor: stat.bgcolor, color: stat.color, mr: 2 }}>
-                        {stat.icon}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          {stat.title}
-                        </Typography>
-                        <Typography variant="h4" fontWeight="bold" color={stat.color}>
-                          {stat.value}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </AnimatedCard>
-                )}
-              </Grid>
-            ))}
-          </Grid>
-        </Grid>
-      </Grid>
-
-      {/* My Courses Section */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center' }}>
-            <SchoolIcon sx={{ mr: 1, color: colors.primary }} /> My Enrolled Courses
-          </Typography>
-        </Box>
-        
-        {loading.courses ? (
-          <Grid container spacing={3}>
-            {[1, 2].map((item) => (
-              <Grid item xs={12} sm={6} md={4} key={item}>
-                <Skeleton variant="rectangular" height={220} sx={{ borderRadius: 3 }} />
-              </Grid>
-            ))}
-          </Grid>
-        ) : enrolledCourses.length === 0 ? (
-          <Box sx={{ 
-            textAlign: 'center', 
-            py: 4,
-            border: `1px dashed ${theme.palette.divider}`,
-            borderRadius: 3
-          }}>
-            <SchoolIcon sx={{ fontSize: 60, opacity: 0.3, mb: 2 }} />
-            <Typography variant="h6" gutterBottom>
-              No courses enrolled yet
-            </Typography>
-            <Button 
-              variant="contained" 
-              sx={{ mt: 2 }}
-              onClick={() => navigate('/courses')}
-            >
-              Browse Courses
-            </Button>
-          </Box>
-        ) : (
-          <Grid container spacing={3}>
-            {enrolledCourses.map((course) => (
-              <Grid item xs={12} sm={6} md={4} key={course.id}>
-                <AnimatedCard
-                  whileHover={{ scale: 1.03 }}
-                  onClick={() => navigate(`/course/${course.id}`)}
-                  sx={{
-                    borderRadius: 3,
-                    bgcolor: 'background.paper',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    boxShadow: 3,
-                    cursor: 'pointer'
-                  }}
-                >
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Box sx={{ position: 'relative', display: 'inline-flex', mr: 2 }}>
-                        <CircularProgress 
-                          variant="determinate" 
-                          value={course.progress} 
-                          size={40}
-                          thickness={4}
-                          sx={{ color: colors.success }}
-                        />
-                        <Box
-                          sx={{
-                            top: 0,
-                            left: 0,
-                            bottom: 0,
-                            right: 0,
-                            position: 'absolute',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <Typography variant="caption" fontWeight="bold">
-                            {course.progress}%
-                          </Typography>
-                        </Box>
-                      </Box>
-                      <Typography variant="h6" fontWeight="medium">
-                        {course.title}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                      Instructor: {course.instructor}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                      }}
-                    >
-                      {course.description}
-                    </Typography>
-                  </CardContent>
-                  <CardActions sx={{ justifyContent: 'flex-end' }}>
-                    <Button 
-                      size="small" 
-                      color="primary" 
-                      sx={{ textTransform: 'none', borderRadius: 1 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/course/${course.id}/continue`);
-                      }}
-                      aria-label={`Continue learning ${course.title}`}
-                    >
-                      Continue Learning
-                    </Button>
-                  </CardActions>
-                </AnimatedCard>
-              </Grid>
-            ))}
-          </Grid>
-        )}
-      </Box>
-
-      <Grid container spacing={3}>
-        {/* Announcements */}
-        <Grid item xs={12} md={6}>
-          <AnimatedCard
-            variants={cardAnimation}
-            whileHover="hover"
-            sx={{
-              borderRadius: 3,
-              bgcolor: 'background.paper',
-              height: '100%'
-            }}
-          >
-            <Box sx={{ p: 3 }}>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                mb: expandedSection.announcements ? 2 : 0
-              }}>
-                <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center' }}>
-                  <AnnouncementIcon sx={{ mr: 1, color: colors.secondary }} /> Announcements
-                </Typography>
-                {mobileView && (
-                  <IconButton 
-                    size="small" 
-                    onClick={() => toggleSection('announcements')}
-                    aria-label={expandedSection.announcements ? 'Collapse announcements' : 'Expand announcements'}
-                  >
-                    {expandedSection.announcements ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  <IconButton onClick={() => toggleSection('courses')}>
+                    {expandedSection.courses ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                   </IconButton>
-                )}
+                </Box>
               </Box>
-              
-              <Collapse in={!mobileView || expandedSection.announcements}>
-                {loading.announcements ? (
-                  <Box>
-                    {[1, 2].map((item) => (
-                      <Skeleton key={item} variant="rectangular" height={72} sx={{ mb: 1, borderRadius: 1 }} />
-                    ))}
-                  </Box>
-                ) : announcements.length === 0 ? (
-                  <Box sx={{ 
-                    textAlign: 'center', 
-                    py: 3,
-                    border: `1px dashed ${theme.palette.divider}`,
-                    borderRadius: 2
-                  }}>
-                    <AnnouncementIcon sx={{ fontSize: 40, opacity: 0.3, mb: 1 }} />
-                    <Typography variant="body1" color="text.secondary">
-                      No announcements
-                    </Typography>
-                  </Box>
-                ) : (
-                  <>
-                    <List dense disablePadding>
-                      {announcements.map((announcement, index) => (
-                        <React.Fragment key={announcement.id}>
-                          <ListItem 
-                            sx={{ 
-                              py: 1.5,
-                              px: 2,
-                              borderRadius: 1,
-                              '&:hover': { bgcolor: 'action.hover' }
+              <Collapse in={expandedSection.courses}>
+                <Box sx={{ p: 3 }}>
+                  {loading ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      {[0, 1, 2].map((i) => (
+                        <Skeleton key={i} variant="rectangular" height={130} animation="wave" sx={{ borderRadius: 3 }} />
+                      ))}
+                    </Box>
+                  ) : filteredCourses.length === 0 ? (
+                    <Box sx={{ textAlign: 'center', py: 5 }}>
+                      <Typography variant="body1" color="text.secondary">
+                        No courses found. {searchQuery ? 'Try a different search.' : 'Enroll in courses to get started.'}
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        sx={{ mt: 3, px: 4, py: 1.5, borderRadius: 3 }}
+                        onClick={() => navigate('/courses')}
+                      >
+                        Browse Courses
+                      </Button>
+                    </Box>
+                  ) : (
+                    <Grid container spacing={4}>
+                      {filteredCourses.map((course) => (
+                        <Grid item xs={12} sm={6} key={course.id}>
+                          <AnimatedCard
+                            whileHover={cardAnimation.hover}
+                            sx={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              height: '100%',
+                              borderRadius: 3,
+                              borderLeft: `5px solid ${colors.primary}`,
+                              boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
                             }}
                           >
-                            <ListItemIcon sx={{ minWidth: 36 }}>
-                              <AnnouncementIcon color="secondary" />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={
-                                <Typography variant="subtitle2" fontWeight="medium">
-                                  {announcement.title}
-                                </Typography>
-                              }
-                              secondary={
-                                <>
-                                  <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                    {announcement.text}
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {new Date(announcement.date).toLocaleDateString('en-US', {
-                                      month: 'short',
-                                      day: 'numeric',
-                                      year: 'numeric'
-                                    })}
-                                  </Typography>
-                                </>
-                              }
-                            />
-                          </ListItem>
-                          {index < announcements.length - 1 && (
-                            <Divider component="li" sx={{ my: 0.5 }} />
-                          )}
-                        </React.Fragment>
+                            <CardContent sx={{ flexGrow: 1, pb: 1 }}>
+                              <Typography variant="h6" fontWeight={600} noWrap>
+                                {course.title}
+                              </Typography>
+                              <LinearProgress
+                                variant="determinate"
+                                value={course.progress || 0}
+                                sx={{ height: 9, borderRadius: 5 }}
+                                color={course.progress >= 80 ? 'success' : course.progress >= 50 ? 'warning' : 'error'}
+                              />
+                            </CardContent>
+                            <CardActions sx={{ justifyContent: 'flex-end', px: 2, pb: 2 }}>
+                              <Button
+                                size="small"
+                                onClick={() => navigate(`/course/${course.id}`)}
+                                sx={{ color: colors.primary, fontWeight: 700 }}
+                              >
+                                View Course
+                              </Button>
+                            </CardActions>
+                          </AnimatedCard>
+                        </Grid>
                       ))}
-                    </List>
-                    <Button 
-                      fullWidth 
-                      size="small" 
-                      sx={{ mt: 2, textTransform: 'none', borderRadius: 1 }}
-                      onClick={() => navigate('/announcements')}
-                    >
-                      View All Announcements
-                    </Button>
-                  </>
-                )}
+                    </Grid>
+                  )}
+                </Box>
               </Collapse>
-            </Box>
-          </AnimatedCard>
-        </Grid>
-      </Grid>
-      <p>Backend status: {backendMessage}</p>
+            </AnimatedCard>
 
-      {/* Enrolled Courses */}
-      <Typography variant="h5" gutterBottom>
-        Enrolled Courses
-      </Typography>
-      {enrolledCourses.length === 0 ? (
-        <Typography variant="body1" color="text.secondary">
-          You are not enrolled in any courses yet.
-        </Typography>
-      ) : (
-        <Grid container spacing={3}>
-          {enrolledCourses.map((course) => (
-            <Grid item xs={12} sm={6} md={4} key={course.id}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">{course.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {course.description}
+            {/* Assignments Section */}
+            <AnimatedCard
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              sx={{
+                mb: 5,
+                borderRadius: 4,
+                overflow: 'hidden',
+                boxShadow: '0 2px 16px rgba(74, 20, 140, 0.15)',
+              }}
+            >
+              <Box
+                sx={{
+                  p: 3,
+                  bgcolor: theme.palette.mode === 'light' ? colors.lightOrange : colors.darkOrangeTransparent,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                }}
+              >
+                <Typography variant="h6" fontWeight={700} color={colors.secondary}>
+                  Assignments
+                </Typography>
+              </Box>
+              <Box sx={{ p: 3 }}>
+                {loading ? (
+                  <Skeleton variant="rectangular" height={80} sx={{ borderRadius: 2 }} />
+                ) : filteredAssignments && filteredAssignments.length > 0 ? (
+                  filteredAssignments.map((assignment) => (
+                    <Box key={assignment.id} sx={{ mb: 2 }}>
+                      <Typography variant="subtitle1" fontWeight="bold">
+                        {assignment.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Due Date: {assignment.dueDate}
+                      </Typography>
+                    </Box>
+                  ))
+                ) : (
+                  <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                    No assignments due at the moment.
                   </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+                )}
+              </Box>
+            </AnimatedCard>
 
-      {/* Announcements */}
-      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
-        Announcements
-      </Typography>
-      {filteredAnnouncements.length === 0 ? (
-        <Typography variant="body1" color="text.secondary">
-          No announcements available.
-        </Typography>
-      ) : (
-        <Grid container spacing={3}>
-          {filteredAnnouncements.map((announcement) => (
-            <Grid item xs={12} key={announcement.id}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">{announcement.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {announcement.text}
+            {/* Live Classes Section */}
+            <AnimatedCard
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              sx={{
+                mb: 5,
+                borderRadius: 4,
+                overflow: 'hidden',
+                boxShadow: '0 2px 16px rgba(74, 20, 140, 0.15)',
+              }}
+            >
+              <Box
+                sx={{
+                  p: 3,
+                  bgcolor: theme.palette.mode === 'light' ? colors.lightPurple : colors.darkPurpleTransparent,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                }}
+              >
+                <Typography variant="h6" fontWeight={700} color={colors.primary}>
+                  Live Classes
+                </Typography>
+              </Box>
+              <Box sx={{ p: 3 }}>
+                {loading ? (
+                  <Skeleton variant="rectangular" height={80} sx={{ borderRadius: 2 }} />
+                ) : filteredLiveClasses && filteredLiveClasses.length > 0 ? (
+                  filteredLiveClasses.map((liveClass) => (
+                    <Box key={liveClass.id} sx={{ mb: 2 }}>
+                      <Typography variant="subtitle1" fontWeight="bold">
+                        {liveClass.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Date: {liveClass.date}, Time: {liveClass.time || 'TBD'}
+                      </Typography>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        href={liveClass.meetLink}
+                        target="_blank"
+                        sx={{ mt: 1 }}
+                      >
+                        Join Class
+                      </Button>
+                    </Box>
+                  ))
+                ) : (
+                  <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                    No live classes scheduled at the moment.
                   </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+                )}
+              </Box>
+            </AnimatedCard>
 
-      {/* Live Quizzes */}
-      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
-        Live Quizzes
-      </Typography>
-      {filteredLiveQuizzes.length === 0 ? (
-        <Typography variant="body1" color="text.secondary">
-          No live quizzes available.
-        </Typography>
-      ) : (
-        <Grid container spacing={3}>
-          {filteredLiveQuizzes.map((quiz) => (
-            <Grid item xs={12} key={quiz.id}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">{quiz.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Date: {quiz.date}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+            {/* Announcements Section */}
+            <Announcements />
+          </Grid>
         </Grid>
-      )}
-
-      {/* Live Classes */}
-      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
-        Live Classes
-      </Typography>
-      {filteredLiveClasses.length === 0 ? (
-        <Typography variant="body1" color="text.secondary">
-          No live classes available.
-        </Typography>
-      ) : (
-        <Grid container spacing={3}>
-          {filteredLiveClasses.map((liveClass) => (
-            <Grid item xs={12} key={liveClass.id}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">{liveClass.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Date: {liveClass.date}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+      </Box>
     </Box>
   );
 };

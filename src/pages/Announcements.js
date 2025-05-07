@@ -13,18 +13,13 @@ import {
   Skeleton,
   Button,
 } from '@mui/material';
-import {
-  Announcement as AnnouncementIcon,
-  ArrowBack as ArrowBackIcon,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { Announcement as AnnouncementIcon } from '@mui/icons-material';
 
 const Announcements = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
-  const navigate = useNavigate();
   const { courses } = useContext(CoursesContext);
 
   // Filter announcements based on enrolled courses
@@ -71,14 +66,6 @@ const Announcements = () => {
         py: 3,
       }}
     >
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={() => navigate('/dashboard')}
-        sx={{ mb: 3 }}
-      >
-        Back to Dashboard
-      </Button>
-
       <Typography variant="h4" fontWeight="bold" gutterBottom>
         Announcements
       </Typography>
